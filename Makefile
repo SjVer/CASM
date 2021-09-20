@@ -8,7 +8,7 @@ CXXFLAGS = -std=c11 -Wall -lm -D COMPILER=\"$(CC)\" -D BRACE_LIB_PATH=\"$(libpat
 LDFLAGS = 
 
 # Makefile settings - Can be customized.
-APPNAME = app
+APPNAME = casm
 EXT = .c
 SRCDIR = src
 HEADERDIR = include
