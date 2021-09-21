@@ -1,8 +1,8 @@
 #bits 16
 #type text
+#ext ".ram"
 #prefix "v2.0 raw "
 #format " {}"
-#ext .ram
 
 lda {address:8} = 0x01 + address
 sta {address:8} = 0x02 + address

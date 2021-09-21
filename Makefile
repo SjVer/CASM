@@ -89,4 +89,5 @@ debug: all
 
 .PHONY: test
 test: all
-	$(APP) test/test.instr test/test.asm
+	@printf "\n\n\n"
+	@$(APP) test/test.instr test/test.asm

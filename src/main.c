@@ -80,15 +80,22 @@ int main(int argc, char **argv)
 	/* Where the magic happens */
 	argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
-	// ========= ============= =========
+	// ========= setting stuff up =========
     
-    // char *instr_src = readFile(arguments.args[0]);
-    // char *asm_src = readFile(arguments.args[1]);
+    char *instr_src = readFile(arguments.args[0]);
+    char *asm_src = readFile(arguments.args[1]);
 	
 	Chunk chunk;
 	initChunk(&chunk);
+
+    Options options;
+    initOptions(&options);
 	
-	// ========= ============= =========
+	// ========= compiling stuff =========
+
+    AssembleStatus status = assemble(&options, instr_src, asm_src);
+
+	// ========= output stuff =========
 
 	// if no output file is given the output file is input file 
 	// but with the extension given in the instruction file or none
@@ -104,23 +111,10 @@ int main(int argc, char **argv)
 		newname = malloc(len + 6);
 		
 		strncpy(newname, arguments.args[0], len);
-		strcpy(newname + len, "." "bin");
+		strcpy(newname + len, options.extension);
 
 		arguments.outfile = newname;
 	}
 
-	Array arr = newArray(float, 2, 2, true);
-	printf("%zu: %zu\n", arr.used, arr.size);
-
-	float ff = 1.5;
-	appendArray(&arr, ff);
-	// appendArray(&arr, 1.0);
-	// appendArray(&arr, 2.0);
-	// appendArray(&arr, 3.0);
-	printf("%zu: %zu\n", arr.used, arr.size);
-
-	for(int i = 0; i < arr.used; i++)
-		printf("- %f\n", idxArray(arr, i, float));
-
-	return 0;
+	return status;
 }

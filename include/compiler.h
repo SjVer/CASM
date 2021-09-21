@@ -3,13 +3,6 @@
 
 #include "common.h"
 
-// output format type
-typedef enum
-{
-	TYPE_TEXT,
-	TYPE_BINARY,
-} OutputType;
-
 // argument for instructions
 typedef struct
 {
@@ -20,19 +13,30 @@ typedef struct
 // instruction
 typedef struct
 {
-	int opcode, argc;
+	int opcode;
+	char *name;
 	Array args;
 } Instruction;
 
-Instruction newInstruction(int opcode);
+// output format type
+typedef enum
+{
+	TYPE_TEXT,
+	TYPE_BINARY,
+} OutputType;
 
 // assembler options
 typedef struct
 {
 	int bitwidth;
 	OutputType outputType;
-	char *extension, prefix, suffix, format;
+	char *extension, *prefix, *suffix, *format;
 } Options;
 
+// functions
+Instruction newInstruction(int opcode, const char *name);
+void initOptions(Options *options);
+AssembleStatus assemble(Options *options, 
+	const char *instr_src, const char *asm_src);
 
 #endif

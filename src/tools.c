@@ -55,6 +55,54 @@ void *reallocate(void *pointer, size_t newSize)
 }
 
 
+
+// copies a c string and returns that
+char *cpystr(const char *chars, int length)
+{
+	char *heapChars = ALLOCATE(char, length + 1);
+	memcpy(heapChars, chars, length);
+	heapChars[length] = '\0';
+	return heapChars;
+}
+
+// lineify string
+Array spltstr(const char *str, const char *delim)
+{
+    Array lines = newArray(char*, 0, 1, true);
+
+	char *line = strtok(cpystr(str, strlen(str)), delim);
+	while (line != NULL)
+	{
+		_appendArray(&lines, (void *)line);
+		line = strtok(NULL, delim);
+	}
+
+    return lines;
+}
+
+char *_strpstr(const char *str, const char *delim, bool front, bool back)
+{
+    char *ret = cpystr(str, strlen(str));
+    
+    if (strlen(ret) == 0) return ret;
+
+    // strip front
+    while (strstart(ret, delim) && front)
+        ret += strlen(delim);
+    
+    // strip back
+    while (strend(str, delim) && back)
+        ret = cpystr(ret, strlen(ret) - strlen(delim));
+    
+    return ret;
+}
+// strip string using delim as delimeter
+char *strpstr(const char *str, const char *delim) { return _strpstr(str, delim, true, true); }
+// strip front of string using delim as delimeter
+char *strpstrf(const char *str, const char *delim) { return _strpstr(str, delim, true, false); }
+// strip back of string using delim as delimeter
+char *strpstrb(const char *str, const char *delim) { return _strpstr(str, delim, false, true); }
+
 // formats a string
 char *fstr(const char *format, ...)
 {
@@ -81,6 +129,43 @@ char *fstr(const char *format, ...)
     return buffer;
 }
 
+// checks if a string is numeric
+bool isnum(const char *str, bool float_allowed)
+{
+    bool float_found = false;
+    for (int i = 0; i < strlen(str); i++)
+    {
+        if (str[i] >= '0' && str[i] <= '9') continue;
+        
+        if (str[i] == '.' && !float_found && float_allowed)
+        {
+            float_found = true;
+            continue;
+        }
+
+        return false;
+    }
+    return true;
+}
+
+// check if a string starts with the given substring
+bool strstart(const char *str, const char *start)
+{
+    // str cannot be shorter than start
+    if (strlen(str) < strlen(start)) return false;
+
+    return strncmp(str, start, strlen(start)) == 0;
+}
+
+// check if a string ends with the given substring
+bool strend(const char *str, const char *end)
+{
+    // str cannot be shorter than start
+    if (strlen(str) < strlen(end)) return false;
+
+    return strcmp(str + strlen(end) + 1, end) == 0;
+}
+
 // returns the number of utf8 code points in the buffer at s
 size_t utf8len(char *s)
 {
@@ -88,6 +173,8 @@ size_t utf8len(char *s)
     for (; *s; ++s) if ((*s & 0xC0) != 0x80) ++len;
     return len;
 }
+
+
 
 // read constents of file to string
 char *readFile(const char *path)
