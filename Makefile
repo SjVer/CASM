@@ -86,3 +86,7 @@ printdebug:
 debug: CXXFLAGS += $(DEBUGFLAGS)
 debug: printdebug
 debug: all
+
+.PHONY: test
+test: all
+	$(APP) test/test.instr test/test.asm

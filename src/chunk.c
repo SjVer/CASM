@@ -1,6 +1,4 @@
-#include "chunk.h"
 #include "common.h"
-#include "tools.h"
 
 // disable "type name is not allowed" error
 #ifdef __INTELLISENSE__

@@ -22,6 +22,41 @@
 #define GROW_ARRAY(type, pointer, newCount) \
     (type *)reallocate(pointer, sizeof(type) * (newCount))
 
+// =========== array stuff ===========
+typedef struct
+{
+    size_t used, size, typeSize;
+    int growConstant;
+    bool addNotMultiplySize;
+    void **items;
+} Array;
+
+Array _newArray(
+    size_t typeSize, int initCount,
+    int growConstant, bool addNotMultiplySize);
+void _appendArray(Array *array, void *item);
+
+#define newArray(type, initCount, growConstant, addNotMultiplySize) \
+    (_newArray(sizeof(type), initCount, growConstant, addNotMultiplySize))
+#define appendArray(array, item) (_appendArray(array, (void *)item))
+#define idxArray(array, index, type) ((type)array.items[index])
+
+/*
+#define newArray(type, size) ({     \
+    struct{                         \
+        Array arr; type *items;     \
+    } newArr;                       \
+    newArr.items = malloc(          \
+        size * sizeof(type));       \
+                                    \
+    newArr.arr.size = size;         \
+    newArr.arr.used = 0;            \
+    newArr;                         \
+})
+*/
+
+// =========== ========= ===========
+
 void *reallocate(void *pointer, size_t newSize);
 char *fstr(const char *format, ...);
 size_t utf8len(char *s);

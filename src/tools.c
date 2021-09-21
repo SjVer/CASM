@@ -1,6 +1,38 @@
 #include "common.h"
 #include "tools.h"
 
+// ========================
+
+Array _newArray(
+    size_t typeSize, int initCount,
+    int growConstant, bool addNotMultiplySize)
+{
+    Array array;
+    array.used = 0;
+    array.size = initCount;
+    array.typeSize = typeSize;
+    array.growConstant = growConstant;
+    array.addNotMultiplySize = addNotMultiplySize;
+    array.items = malloc(initCount * typeSize);
+    return array;
+}
+
+void _appendArray(Array *array, void *item)
+{
+    if (array->used == array->size)
+    {
+        // grow array
+        array->size = array->addNotMultiplySize ?
+            array->size + array->growConstant :
+            array->size * array->growConstant;
+
+        array->items = realloc(array->items, array->size * array->typeSize);
+    }
+    array->items[array->used++] = item;
+}
+
+// ========================
+
 // reallocates memory of size newSize for pointer
 // if newSize is 0, pointer is freed
 void *reallocate(void *pointer, size_t newSize)
@@ -16,11 +48,12 @@ void *reallocate(void *pointer, size_t newSize)
     if (result == NULL)
     {
         // exit if we have no more memory available
-        fprintf(stderr, "MEMORY ALLOCATION FAILED! (Asked for %d)\n", newSize);
+        fprintf(stderr, "MEMORY ALLOCATION FAILED! (Asked for %zu)\n", newSize);
         exit(1);
     }
     return result;
 }
+
 
 // formats a string
 char *fstr(const char *format, ...)

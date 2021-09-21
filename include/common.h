@@ -10,6 +10,7 @@
 
 #include "tools.h"
 #include "chunk.h"
+#include "compiler.h"
 
 // app info
 #define APP_NAME "casm"

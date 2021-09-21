@@ -78,17 +78,16 @@ int main(int argc, char **argv)
 	arguments.verbose = false;
 
 	/* Where the magic happens */
-	argp_parse(&argp, argc, argv, 0, 0, &arguments);}
+	argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
 	// ========= ============= =========
     
-    char *src = readFile(arguments.args[0]);
+    // char *instr_src = readFile(arguments.args[0]);
+    // char *asm_src = readFile(arguments.args[1]);
 	
 	Chunk chunk;
 	initChunk(&chunk);
 	
-	int state = 0;
-
 	// ========= ============= =========
 
 	// if no output file is given the output file is input file 
@@ -110,7 +109,18 @@ int main(int argc, char **argv)
 		arguments.outfile = newname;
 	}
 
-	// writeBinFile(arguments.outfile, bytes.bytes, bytes.count);
+	Array arr = newArray(float, 2, 2, true);
+	printf("%zu: %zu\n", arr.used, arr.size);
 
-	return state;
+	float ff = 1.5;
+	appendArray(&arr, ff);
+	// appendArray(&arr, 1.0);
+	// appendArray(&arr, 2.0);
+	// appendArray(&arr, 3.0);
+	printf("%zu: %zu\n", arr.used, arr.size);
+
+	for(int i = 0; i < arr.used; i++)
+		printf("- %f\n", idxArray(arr, i, float));
+
+	return 0;
 }
