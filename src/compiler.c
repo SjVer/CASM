@@ -96,7 +96,39 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 			else if (strstart(line + 1, "ext"))
 			{
 				char *arg = strpstr(line + 4, " ");
-				msgAt(i + 1, arg);
+				
+				if (!strstart(arg, "\"") && !strend(arg, "\""))
+				{
+					errorAt(line, i+1,
+						fstr("option 'ext' expects a string enclosed by double quotes, not '%s'.", arg));
+					return ASSEMBLE_INVALID_OPTION;
+				}
+
+				options->extension = cpystr(arg + 1, strlen(arg) - 2);
+				msgAt(i + 1, fstr("Extension set to '%s'.", options->extension));
+			}
+
+			// #prefix {string|ints}
+			else if (strstart(line + 1, "prefix"))
+			{
+				char *arg = strpstr(line + 7, " ");
+
+				if (options->outputType == TYPE_BINARY)
+				{
+					errorAt(line, i + 1, "prefix in binary output mode not supported.");
+					return ASSEMBLE_INVALID_OPTION;
+				}
+				else if (options->outputType == TYPE_TEXT)
+				{
+					if (!strstart(arg, "\"") && !strend(arg, "\""))
+					{
+						errorAt(line, i+1,
+							fstr("option 'prefix' expects a string enclosed by double quotes, not '%s'.", arg));
+						return ASSEMBLE_INVALID_OPTION;
+					}
+					options->prefix = cpystr(arg + 1, strlen(arg) - 2);
+					msgAt(i + 1, fstr("Prefix set to '%s'.", options->prefix));
+				}
 			}
 
 			// invalid option
