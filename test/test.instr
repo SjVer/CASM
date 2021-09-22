@@ -7,8 +7,8 @@
 lda {address:8} = 0x01 + address
 sta {address:8} = 0x02 + address
 add {value:8}   = 0x03 + value
-jmp {address:8} = 0x04 + address
-hlt 	        = 0x05
+jmp {address:8} = 4 + address
+hlt 	        = 0b101
 shl {value:4} {times:4} = 0x06 + value + times
 
 iadd {address:8} {value:8}:

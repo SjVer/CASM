@@ -114,12 +114,23 @@ static int consumeIntMaybe(const char *part)
 	// normal int
 	if (isnum(str, false)) return atoi(str);
 
+	// hexadecimal
 	else if (strstart(str, "0x"))
 	{
 		for (int i = 2; i < strlen(str); i++)
 			if (!(tolower(str[i]) >= '0' && tolower(str[i]) <= 'f')) return INVALID_CONSUME;
 		return (int)strtol(str + 2, NULL, 16);
 	}
+
+	// binary
+	else if (strstart(str, "0b"))
+	{
+		for (int i = 2; i < strlen(str); i++)
+			if (str[i] != '0' && str[i] != '1') return INVALID_CONSUME;
+		return (int)strtol(str + 2, NULL, 2);
+	}
+
+	return INVALID_CONSUME;
 }
 
 // =============================
@@ -325,16 +336,22 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 			else // instruction
 			{
 				char *name = idxArray(&words, 0, char*);
+				printf("\n== %s ==\n", name);
 
 				// skip tabs
-				char *equals = idxArray(&words, i, char*);
+				char *equals = strpstr(idxArray(&words, i, char*), " ");
 				while (true)
 				{
 					equals = strpstr(equals, "\t");
-					if (strlen(equals) == 0) equals = idxArray(&words, i++, char*);
+					if (strlen(equals) == 0)
+					{
+						i++;
+						equals = idxArray(&words, i, char*);
+					}
 					else break;
 				}
 
+				
 				// match '='
 				if (strcmp("=", equals) != 0)
 				{
@@ -347,13 +364,19 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 				// format
 				while (true)
 				{
+					// TODO: Check if there are more words
+					// 		 if not, newline + tab + rest is allowed
+
 					char *curWord = idxArray(&words, i, char*);
-					int someInt = consumeIntMaybe(curWord);
+					int opcode = consumeIntMaybe(curWord);
 					
-					if (someInt == INVALID_CONSUME)
+					if (opcode == INVALID_CONSUME)
 						return ASSEMBLE_INVALID_DECL;
 					
-					printf("-> %d\n", someInt);
+					printf("-> %d\n", opcode);
+
+					// Instruction instr = newInstruction(opcode, name);
+
 					break;
 				}
 

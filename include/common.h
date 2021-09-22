@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #pragma GCC diagnostic ignored "-Wcomment"
 
