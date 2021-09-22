@@ -4,6 +4,12 @@
 #prefix "v2.0 raw "
 #format " {}"
 
+#bits 8
+#type bin
+#ext ""
+#prefix 1,2, 3
+#suffix 3, 2,1
+
 lda {address:8} = 0x01 + address
 sta {address:8} = 0x02 + address
 add {value:8}   = 0x03 + value

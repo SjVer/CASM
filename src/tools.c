@@ -4,16 +4,16 @@
 // ========================
 
 Array _newArray(
-    size_t typeSize, int initCount,
+    /*size_t typeSize,*/ int initCount,
     int growConstant, bool addNotMultiplySize)
 {
     Array array;
     array.used = 0;
     array.size = initCount;
-    array.typeSize = typeSize;
+    // array.typeSize = typeSize;
     array.growConstant = growConstant;
     array.addNotMultiplySize = addNotMultiplySize;
-    array.items = malloc(initCount * typeSize);
+    array.items = malloc(initCount * sizeof(void*));
     return array;
 }
 
@@ -26,7 +26,8 @@ void _appendArray(Array *array, void *item)
             array->size + array->growConstant :
             array->size * array->growConstant;
 
-        array->items = realloc(array->items, array->size * array->typeSize);
+        // array->items = realloc(array->items, array->size * array->typeSize);
+        array->items = realloc(array->items, array->size * sizeof(void*));
     }
     array->items[array->used++] = item;
 }
@@ -68,7 +69,7 @@ char *cpystr(const char *chars, int length)
 // lineify string
 Array spltstr(const char *str, const char *delim)
 {
-    Array lines = newArray(char*, 0, 1, true);
+    Array lines = newArray(0, 1, true);
 
 	char *line = strtok(cpystr(str, strlen(str)), delim);
 	while (line != NULL)

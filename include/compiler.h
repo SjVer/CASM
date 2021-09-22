@@ -30,7 +30,8 @@ typedef struct
 {
 	int bitwidth;
 	OutputType outputType;
-	char *extension, *prefix, *suffix, *format;
+	char *extension;
+	void *prefix, *suffix, *format;
 } Options;
 
 // functions

@@ -93,6 +93,11 @@ int main(int argc, char **argv)
 	
 	// ========= compiling stuff =========
 
+    // Array arr = _newArray(0, 1, true);
+    // appendArray(&arr, int, 123);
+    // printf("%d\n", idxArray(arr, 0, int));
+    // return 0;
+
     AssembleStatus status = assemble(&options, instr_src, asm_src);
 
 	// ========= output stuff =========

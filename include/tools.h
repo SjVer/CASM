@@ -22,26 +22,28 @@
 #define GROW_ARRAY(type, pointer, newCount) \
     (type *)reallocate(pointer, sizeof(type) * (newCount))
 
+#define ADDR(type, literal) &(type){literal}
+
 // =========== array stuff ===========
 typedef struct
 {
-    size_t used, size, typeSize;
+    size_t used, size; //, typeSize;
     int growConstant;
     bool addNotMultiplySize;
     void **items;
 } Array;
 
 Array _newArray(
-    size_t typeSize, int initCount,
+    /*size_t typeSize,*/ int initCount,
     int growConstant, bool addNotMultiplySize);
 void _appendArray(Array *array, void *item);
 
-#define newArray(type, initCount, growConstant, addNotMultiplySize) \
-    (_newArray(sizeof(type), initCount, growConstant, addNotMultiplySize))
+#define newArray(/*type,*/ initCount, growConstant, addNotMultiplySize) \
+    (_newArray(/*sizeof(type),*/ initCount, growConstant, addNotMultiplySize))
 #define appendArray(array, type, item) \
-    (_appendArray(array, &((type){item})))
+    (_appendArray(array, &(type){item}))
 #define idxArray(array, index, type) \
-    (*((type *)array.items[index]))
+    (*(type *)array.items[index])
 
 // =========== ========= ===========
 
@@ -59,9 +61,9 @@ bool isnum(const char *str, bool float_allowed);
 bool strstart(const char *str, const char* start);
 bool strend(const char *str, const char *end);
 size_t utf8len(char *s);
+char *toUpper(const char *str);
 
 char *readFile(const char *path);
 void writeBinFile(const char *path, uint8_t *bytes, int byteCount);
-char *toUpper(const char *str);
 
 #endif
