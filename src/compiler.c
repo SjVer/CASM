@@ -22,10 +22,13 @@ void initOptions(Options *options)
 
 // =============================
 
+char *curFile;
+bool verbose;
+
 // displays an error with the given token and message
 static void errorAt(const char *part, int line, const char *message)
 {
-	fprintf(stderr, "[line %d] Error", line);
+	fprintf(stderr, "[%s:%d] Error", curFile, line);
 
 	// if (token->type == TOKEN_EOF)
 	// {
@@ -42,8 +45,7 @@ static void errorAt(const char *part, int line, const char *message)
 // displays the given message if verbose mode is on
 static void msgAt(int line, const char *msg)
 {
-	// fprintf(stdout, "%sMsg: %s\n", print_line ? fstr("[line %d] ", line) : "", msg);
-	fprintf(stdout, "[line %d] %s\n", line, msg);
+	if (verbose) fprintf(stdout, "[%s:%d] %s\n", curFile, line, msg);
 }
 
 // =============================
@@ -52,11 +54,11 @@ typedef void* (*consumeFn)(const char *part, const char *name, bool inList);
 char *curLine;
 int lineNo;
 
-static void *consumeInt(const char *part, const char *name, bool inList)
+static void *consumeIntMacro(const char *part, const char *name, bool inList)
 {
 	if (!isnum(strpstr(part, " "), false))
 	{
-		errorAt(curLine, lineNo, fstr("option '%s' expects %s, not '%s'.", 
+		errorAt(curLine, lineNo, fstr("%s expects %s, not '%s'.", 
 			name, inList ? "integers" : "an integer", part));
 		return (void *)INVALID_CONSUME;
 	}
@@ -69,7 +71,7 @@ static void *consumeStr(const char *part, const char *name, bool inList)
 	if (!strstart(str, "\"") && !strend(str, "\""))
 	{
 		errorAt(curLine, lineNo,
-			fstr("option '%s' expects %s enclosed by double quotes, not '%s'.", 
+			fstr("%s expects %s enclosed by double quotes, not '%s'.", 
 				name, inList ? "strings" : "a string", str));
 		return (void *)INVALID_CONSUME;
 	}
@@ -78,7 +80,7 @@ static void *consumeStr(const char *part, const char *name, bool inList)
 
 static Array consumeList(const char *part, const char *name, consumeFn fn)
 {
-	Array arr = _newArray(0, 1, true);
+	Array arr = newArray(0, 1, true);
 	Array parts = spltstr(part, ",");
 
 	for (int i = 0; i < parts.used; i++)
@@ -103,19 +105,33 @@ static Array consumeList(const char *part, const char *name, consumeFn fn)
 	return arr;
 }
 
+static int consumeIntMaybe(const char *part)
+{
+	char *str = strpstr(strpstr(part, " "), "\t");
+
+	printf("%s ", str);
+
+	// normal int
+	if (isnum(str, false)) return atoi(str);
+
+	else if (strstart(str, "0x"))
+	{
+		for (int i = 2; i < strlen(str); i++)
+			if (!(tolower(str[i]) >= '0' && tolower(str[i]) <= 'f')) return INVALID_CONSUME;
+		return (int)strtol(str + 2, NULL, 16);
+	}
+}
+
 // =============================
 
 static AssembleStatus compileInstrFile(Options *options, const char *src)
 {
 	// split into lines
 	Array lines = spltstr(src, "\n");
-	// for(int i = 0; i < lines.used; i++)
-	// 	printf("%s\n", idxArray(&lines, i, char*));
 
 	for(lineNo = 1; lineNo < lines.used + 1; lineNo++)
 	{
-		// lineNo = lineNo;
-		curLine = idxArray(&lines, lineNo - 1, char*);
+		curLine = idxArray(&spltstr(idxArray(&lines, lineNo - 1, char*), ";"), 0, char*);
 		
 		// option
 		if (strstart(curLine, "#"))
@@ -123,7 +139,7 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 			// #bits {int}
 			if (strstart(curLine + 1, "bits"))
 			{	
-				options->bitwidth = *(int *)consumeInt(curLine + 5, "bits", false);
+				options->bitwidth = *(int *)consumeIntMacro(curLine + 5, "option 'bits'", false);
 				if (options->bitwidth == INVALID_CONSUME)
 					return ASSEMBLE_INVALID_OPTION;
 
@@ -153,7 +169,7 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 			// #ext {string}
 			else if (strstart(curLine + 1, "ext"))
 			{
-				char *ext = consumeStr(curLine + 4, "ext", false);
+				char *ext = consumeStr(curLine + 4, "option 'ext'", false);
 				if (ext == (char *)INVALID_CONSUME) return ASSEMBLE_INVALID_OPTION;
 
 				options->extension = ext;
@@ -167,7 +183,7 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 
 				if (options->outputType == TYPE_BINARY)
 				{
-					Array args = consumeList(arg, "prefix", &consumeInt);
+					Array args = consumeList(arg, "option 'prefix'", &consumeIntMacro);
 					
 					int *prefix = malloc(args.used * sizeof(int));
 					for (int i = 0; i < args.used; i++)
@@ -183,7 +199,7 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 				}
 				else if (options->outputType == TYPE_TEXT)
 				{
-					char *prefix = consumeStr(arg, "prefix", false);
+					char *prefix = consumeStr(arg, "option 'prefix'", false);
 					if (prefix == (char *)INVALID_CONSUME) return ASSEMBLE_INVALID_OPTION;
 					
 					options->prefix = prefix;
@@ -198,7 +214,7 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 
 				if (options->outputType == TYPE_BINARY)
 				{
-					Array args = consumeList(arg, "suffix", &consumeInt);
+					Array args = consumeList(arg, "option 'suffix'", &consumeIntMacro);
 					
 					int *suffix = malloc(args.used * sizeof(int));
 					for (int i = 0; i < args.used; i++)
@@ -214,7 +230,7 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 				}
 				else if (options->outputType == TYPE_TEXT)
 				{
-					char *suffix = consumeStr(arg, "suffix", false);
+					char *suffix = consumeStr(arg, "option 'suffix'", false);
 					if (suffix == (char *)INVALID_CONSUME) return ASSEMBLE_INVALID_OPTION;
 					
 					options->suffix = suffix;
@@ -234,7 +250,7 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 				}
 				else if (options->outputType == TYPE_TEXT)
 				{
-					char *format = consumeStr(arg, "format", false);
+					char *format = consumeStr(arg, "option 'format'", false);
 					if (format == (char *)INVALID_CONSUME) return ASSEMBLE_INVALID_OPTION;
 					
 					options->format = format;
@@ -246,18 +262,116 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 			else
 			{
 				errorAt(curLine, lineNo, fstr("invalid option '%s'.",
-					idxArray(spltstr(curLine + 1, " "), 0, char *)));
+					idxArray(&spltstr(curLine + 1, " "), 0, char*)));
 				return ASSEMBLE_INVALID_MACRO;
 			}
 		}		
+	
+		// instruction or macro
+		else
+		{
+			Array words = spltstr(curLine, " ");
+			Array args = newArray(0, 1, true);
+
+			/*
+			we only know if we're compiling a macro once
+			we've finished the arguments so we first do that
+			*/
+			
+			int i; // index of last word parsed
+			bool macro = false;
+
+			for (i = 1; i < words.used; i++)
+			{
+				char *curWord = strpstr(idxArray(&words, i, char*), "\t");
+
+				if (!strstart(curWord, "{")) break; // no arg
+				if (!(strend(curWord, "}") || strend(curWord, "}:")))
+				{
+					errorAt(curWord, lineNo, "Expected '}'.");
+					return ASSEMBLE_INVALID_DECL;
+				}
+				
+				_appendArray(&args, strcpy(malloc(strlen(curWord) + 1), curWord));
+
+				if (strend(curWord, ":"))
+				{
+					// must be last word
+					if (i + 1 != words.used)
+					{
+						errorAt(fstr("%s %s", curWord, idxArray(&words, i + 1, char*)),
+							lineNo, "Expected newline after ':'.");
+						return ASSEMBLE_INVALID_MACRO;
+					}
+
+					macro = true;
+					return ASSEMBLE_SUCCESS;
+				}
+			} // end of arg parsing
+
+			/*
+			now that we know if we're dealing with a macro or not
+			we continue parsing accordingly
+			*/
+
+			if (macro)
+			{
+				// TODO: Compile/parse macro
+				// printf("\nmacro: '%s'\nargs: ", firstWord);
+				// for (int i = 0; i < args.used; i++)
+				// 	printf("'%s' ", idxArray(&args, i, char*));
+				// printf("\n");
+			}
+			else // instruction
+			{
+				char *name = idxArray(&words, 0, char*);
+
+				// skip tabs
+				char *equals = idxArray(&words, i, char*);
+				while (true)
+				{
+					equals = strpstr(equals, "\t");
+					if (strlen(equals) == 0) equals = idxArray(&words, i++, char*);
+					else break;
+				}
+
+				// match '='
+				if (strcmp("=", equals) != 0)
+				{
+					errorAt(equals, lineNo, "Expected '='.");
+					return ASSEMBLE_INVALID_DECL;
+				}
+
+				i++;
+
+				// format
+				while (true)
+				{
+					char *curWord = idxArray(&words, i, char*);
+					int someInt = consumeIntMaybe(curWord);
+					
+					if (someInt == INVALID_CONSUME)
+						return ASSEMBLE_INVALID_DECL;
+					
+					printf("-> %d\n", someInt);
+					break;
+				}
+
+			}
+
+		}
 	}
 
 	return ASSEMBLE_SUCCESS;
 }
 
-AssembleStatus assemble(Options *options, 
+AssembleStatus assemble(Options *options, bool _verbose,
+	const char *instr_path, const char *asm_path,
 	const char *instr_src, const char *asm_src)
 {
+	verbose = _verbose;
+
+	curFile = cpystr(instr_path, strlen(instr_path));
 	AssembleStatus instrStatus = compileInstrFile(options, instr_src);
 	return instrStatus;
 }

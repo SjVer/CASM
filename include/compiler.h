@@ -37,7 +37,7 @@ typedef struct
 // functions
 Instruction newInstruction(int opcode, const char *name);
 void initOptions(Options *options);
-AssembleStatus assemble(Options *options, 
+AssembleStatus assemble(Options *options, bool verbose,
+	const char *instr_path, const char *asm_path,
 	const char *instr_src, const char *asm_src);
-
 #endif

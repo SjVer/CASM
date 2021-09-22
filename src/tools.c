@@ -3,7 +3,7 @@
 
 // ========================
 
-Array _newArray(
+Array newArray(
     /*size_t typeSize,*/ int initCount,
     int growConstant, bool addNotMultiplySize)
 {
@@ -55,18 +55,30 @@ void *reallocate(void *pointer, size_t newSize)
     return result;
 }
 
+// copies the data from src to dst with new address
+void *newptr(void *src, size_t size)
+{
+    void *new = malloc(sizeof(size));
+
+    // printf("1. new: %p, src: %p (%s)\n", new, src, new != src ? "different" : "the same");
+    
+    memcpy(new, src, size);
+    
+    // printf("2. new: %p, src: %p (%s)\n", new, src, new != src ? "different" : "the same");
+    return new;
+}
 
 
 // copies a c string and returns that
 char *cpystr(const char *chars, int length)
 {
-	char *heapChars = ALLOCATE(char, length + 1);
-	memcpy(heapChars, chars, length);
-	heapChars[length] = '\0';
-	return heapChars;
+	char *copy = ALLOCATE(char, length + 1);
+	memcpy(copy, chars, length);
+	copy[length] = '\0';
+	return copy;
 }
 
-// lineify string
+// split string using delim as delimeter
 Array spltstr(const char *str, const char *delim)
 {
     Array lines = newArray(0, 1, true);
@@ -85,16 +97,18 @@ char *_strpstr(const char *str, const char *delim, bool front, bool back)
 {
     char *ret = cpystr(str, strlen(str));
     
-    if (strlen(ret) == 0) return ret;
+    if (strlen(ret) == 0 || strlen(delim) == 0 || strlen(delim) > strlen(ret)) return ret;
 
     // strip front
     while (strstart(ret, delim) && front)
         ret += strlen(delim);
     
+    if (strlen(ret) == 0 || strlen(delim) == 0 || strlen(delim) > strlen(ret)) return ret;
+
     // strip back
-    while (strend(str, delim) && back)
+    while (strend(ret, delim) && back)
         ret = cpystr(ret, strlen(ret) - strlen(delim));
-    
+
     return ret;
 }
 // strip string using delim as delimeter
@@ -164,7 +178,10 @@ bool strend(const char *str, const char *end)
     // str cannot be shorter than start
     if (strlen(str) < strlen(end)) return false;
 
-    return strcmp(str + strlen(end) + 1, end) == 0;
+    // printf("checking '%s' == '%s' : %s\n",
+    //     str + strlen(str) - strlen(end), end, 
+    //     strcmp(str + strlen(str) - strlen(end), end) == 0 ? "true" : "false");
+    return strcmp(str + strlen(str) - strlen(end), end) == 0;
 }
 
 // returns the number of utf8 code points in the buffer at s

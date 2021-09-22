@@ -9,6 +9,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#pragma GCC diagnostic ignored "-Wcomment"
+
 typedef enum
 {
     ASSEMBLE_SUCCESS,

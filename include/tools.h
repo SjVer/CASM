@@ -33,13 +33,13 @@ typedef struct
     void **items;
 } Array;
 
-Array _newArray(
+Array newArray(
     /*size_t typeSize,*/ int initCount,
     int growConstant, bool addNotMultiplySize);
 void _appendArray(Array *array, void *item);
 
-#define newArray(/*type,*/ initCount, growConstant, addNotMultiplySize) \
-    (_newArray(/*sizeof(type),*/ initCount, growConstant, addNotMultiplySize))
+// #define newArray(/*type,*/ initCount, growConstant, addNotMultiplySize) \
+//     (_newArray(/*sizeof(type),*/ initCount, growConstant, addNotMultiplySize))
 #define appendArray(array, type, item) \
     (_appendArray(array, &(type){item}))
 #define idxArray(array, index, type) \
@@ -48,6 +48,7 @@ void _appendArray(Array *array, void *item);
 // =========== ========= ===========
 
 void *reallocate(void *pointer, size_t newSize);
+void *newptr(void *src, size_t size);
 
 char *cpystr(const char *chars, int length);
 Array spltstr(const char *str, const char *delim);

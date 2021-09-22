@@ -4,7 +4,7 @@
 
 # Compiler settings - Can be customized.
 CC = gcc
-CXXFLAGS = -std=c11 -Wall -lm -D COMPILER=\"$(CC)\" -D BRACE_LIB_PATH=\"$(libpath)\"
+CXXFLAGS = -std=c11 -Wall -lm -D COMPILER=\"$(CC)\"
 LDFLAGS = 
 
 # Makefile settings - Can be customized.
@@ -90,4 +90,4 @@ debug: all
 .PHONY: test
 test: all
 	@printf "\n\n\n"
-	@$(APP) test/test.instr test/test.asm
+	@$(APP) test/test.instr test/test.asm $(args)
