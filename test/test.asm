@@ -4,5 +4,5 @@
 	hlt
 
 test:
-	shl 2, 3, a
+	shl 2, 3
 	jmp test

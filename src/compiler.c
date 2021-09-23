@@ -579,16 +579,18 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 				typedef struct { int value; int bitwidth; } Bits;
 				Array allBits = newArray(0, 1, true);
 
-				for (int argNo = 0; argNo < instr.args.used; argNo++)
+				int argNo = 1;
+				for (int wordNo = 0; wordNo < instr.args.used; wordNo++)
 				{
-					Arg arg = idxArray(instr.args, argNo, Arg);
+					Arg arg = idxArray(instr.args, wordNo, Arg);
 
 					if (strlen(arg.name) != 0) // argument
 					{
-						curWord = WORD(argNo);
-						printf("arg '%s' (%d/%d:%d)\n", curWord, argNo + 1, words.used, instr.argc);
+						curWord = WORD(wordNo);
+						printf("arg '%s' (%d/%d words, %d/%d args)\n", 
+							curWord, wordNo + 1, words.used, argNo, instr.argc);
 					
-						if (argNo + 1 < instr.argc) // consume ','
+						if (argNo < instr.argc) // consume ','
 						{
 							if (!strend(curWord, ","))
 							{
@@ -598,17 +600,19 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 						}
 						else // expect no other words
 						{
-							if (argNo + 1 < words.used)
+							curWord = WORD(wordNo);
+							if (wordNo + 1 < words.used || strend(curWord, ","))
 							{
-								errorAt(curWord, lineNo, 
+								errorAt(WORD(wordNo + (strend(curWord, ",") ? 0 : 1)), lineNo, 
 									fstr("Expected %d argument%s.", instr.argc, instr.argc != 1 ? "s" : ""));
 								return ASSEMBLE_INVALID_ARGS;
 							}
 						}
+						argNo++;
 					}
 					else // constant/opcode thing
 					{
-						printf("opc: 0x%x (%d/%d)\n", idxArray(instr.args, argNo, Arg).opcode, argNo + 1, words.used);
+						printf("opc: 0x%x (%d/%d)\n", idxArray(instr.args, wordNo, Arg).opcode, wordNo + 1, words.used);
 						// int opcode = *(int *)malloc(arg.bitwidth / 8);
 						Bits bits = { arg.opcode, arg.bitwidth };
 						appendArrayCpy(&allBits, bits);
