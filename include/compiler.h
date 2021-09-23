@@ -14,6 +14,7 @@ typedef struct
 // instruction
 typedef struct
 {
+	int argc;
 	char *name;
 	Array args;
 } Instruction;
@@ -42,7 +43,7 @@ typedef struct
 } Options;
 
 // functions
-Instruction newInstruction(Array Args_array, const char *name);
+// Instruction newInstruction(Array Args_array, const char *name);
 void initOptions(Options *options);
 AssembleStatus assemble(Options *options, int verbose, Chunk *chunk,
 	const char *instr_path, const char *asm_path,

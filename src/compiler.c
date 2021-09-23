@@ -1,9 +1,10 @@
 #include "common.h"
 #define INVALID_CONSUME -1
 
-Instruction newInstruction(Array Args_array, const char *name)
+static Instruction newInstruction(Array Args_array, int argc, const char *name)
 {
 	Instruction instr;
+	instr.argc = argc;
 	instr.name = cpystr(name, strlen(name));
 	instr.args = Args_array;
 	return instr;
@@ -388,7 +389,6 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 				}
 
 				// skip tabs
-				// char *equals = strpstr(idxArray(&words, i, char*), " ");
 				char *equals = CURWORD;
 				while (true)
 				{
@@ -509,7 +509,7 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 				}
 
 				// create instruction
-				Instruction instr = newInstruction(usedArgs, name);
+				Instruction instr = newInstruction(usedArgs, args.used, name);
 				appendArrayCpy(&instructions, instr);
 
 				/*
@@ -575,24 +575,52 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 			}
 			else
 			{
-				// printf("\n=== %s ===\n", instr.name);
-				for (int i = 0; i < instr.args.used; i++)
+				printf("\n=== %s (%d) ===\n", instr.name, instr.argc);
+				typedef struct { int value; int bitwidth; } Bits;
+				Array allBits = newArray(0, 1, true);
+
+				for (int argNo = 0; argNo < instr.args.used; argNo++)
 				{
-					Arg arg = idxArray(instr.args, i, Arg);
+					Arg arg = idxArray(instr.args, argNo, Arg);
 
 					if (strlen(arg.name) != 0) // argument
 					{
-						// printf("arg: '%s' (%d bits)\n", arg.name, arg.bitwidth);
+						curWord = WORD(argNo);
+						printf("arg '%s' (%d/%d:%d)\n", curWord, argNo + 1, words.used, instr.argc);
+					
+						if (argNo + 1 < instr.argc) // consume ','
+						{
+							if (!strend(curWord, ","))
+							{
+								errorAt(curWord, lineNo, "expected ',' after argument.");
+								return ASSEMBLE_INVALID_ARGS;
+							}
+						}
+						else // expect no other words
+						{
+							if (argNo + 1 < words.used)
+							{
+								errorAt(curWord, lineNo, 
+									fstr("Expected %d argument%s.", instr.argc, instr.argc != 1 ? "s" : ""));
+								return ASSEMBLE_INVALID_ARGS;
+							}
+						}
 					}
 					else // constant/opcode thing
 					{
-						int opcode = *(int *)malloc(arg.bitwidth / 8);
-						opcode = arg.opcode;
-
-						// printf("opcode: %d (%zu bits)\n", opcode, sizeof(opcode)); //arg.bitwidth);
-						writeChunk(chunk, opcode, lineNo);
+						printf("opc: 0x%x (%d/%d)\n", idxArray(instr.args, argNo, Arg).opcode, argNo + 1, words.used);
+						// int opcode = *(int *)malloc(arg.bitwidth / 8);
+						Bits bits = { arg.opcode, arg.bitwidth };
+						appendArrayCpy(&allBits, bits);
 					}
 				}
+
+				printf("0x");
+				for (int i = 0; i < allBits.used; i++)
+					printf("%.*x", 
+						idxArray(allBits, i, Bits).bitwidth / 4,
+						idxArray(allBits, i, Bits).value);
+				printf("\n");
 			}
 		}
 		

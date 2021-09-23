@@ -12,6 +12,23 @@
 
 #pragma GCC diagnostic ignored "-Wcomment"
 
+// OS name
+#ifdef _WIN32
+#define OS "Windows 32-bit"
+#elif _WIN64
+#define OS "Windows 64-bit"
+#elif __APPLE__ || __MACH__
+#define OS "Mac OSX"
+#elif __linux__
+#define OS "Linux"
+#elif __FreeBSD__
+#define OS "FreeBSD"
+#elif __unix || __unix__
+#define OS "Unix"
+#else
+#define OS "Other"
+#endif
+
 typedef enum
 {
     ASSEMBLE_SUCCESS,
@@ -29,7 +46,8 @@ typedef enum
 #define APP_DOC APP_NAME \
 " -- A fully customiseable assembler for your own instruction sets.\n\
 Written by Sjoerd Vermeulen ("EMAIL")\v\
-More info at https://github.com/SjVer/CASM."
+More info at https://github.com/SjVer/CASM.\n\
+Build: " __DATE__ " " __TIME__ " on " OS " (" COMPILER ")."
 
 // misc info
 #define EMAIL "sjoerd@marsenaar.com"

@@ -4,14 +4,20 @@
 #prefix "v2.0 raw "
 #format " {}"
 
-lda {address:8} = 0x01`8 + address
+lda {address:8} = 0x1`4 + address + 0x1`4
+
 sta {address:8} = 0x02`8 + address
+
 add {value:8}   = 0x03`8 + value
+
 jmp {address:8} = 4`8 + address
+
 hlt 	        = 0b101`8
+
 shl {value:6} {times:2}
 	= 0x06`2 + value + 
 	times
+
 
 iadd {address:8} {value:8}:
 	lda [address]
