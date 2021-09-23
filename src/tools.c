@@ -58,14 +58,7 @@ void *reallocate(void *pointer, size_t newSize)
 // copies the data from src to dst with new address
 void *newptr(void *src, size_t size)
 {
-    void *new = malloc(sizeof(size));
-
-    // printf("1. new: %p, src: %p (%s)\n", new, src, new != src ? "different" : "the same");
-    
-    memcpy(new, src, size);
-    
-    // printf("2. new: %p, src: %p (%s)\n", new, src, new != src ? "different" : "the same");
-    return new;
+    return memcpy(malloc(sizeof *src), src, sizeof *src);
 }
 
 
@@ -193,6 +186,21 @@ size_t utf8len(char *s)
 }
 
 
+
+
+int bitlen(uint32_t value)
+{
+    int bits = 0;
+    for (int bit_test = 16; bit_test > 0; bit_test >>= 1)
+    {
+        if (value >> bit_test != 0)
+        {
+            bits += bit_test;
+            value >>= bit_test;
+        }
+    }
+    return bits + value;
+}
 
 // read constents of file to string
 char *readFile(const char *path)

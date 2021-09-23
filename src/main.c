@@ -13,14 +13,14 @@ const char *argp_program_bug_address = EMAIL;
 struct arguments
 {
 	char *args[ARGS_COUNT];	 /* INSTRFILE ASMFILE */
-	bool verbose;			 /* The -v flag */
+	int verbose;			 /* The -v flag */
 	char *outfile;			 /* Argument for -o */
 	// char *string1, *string2; /* Arguments for -a and -b */
 };
 
 static struct argp_option options[] = {
 		// longname, shortname, arg, idk, help
-		{"verbose", 'v', 0, 0, "Produce verbose output"},
+		{"verbose", 'v', 0, 0, "Produce verbose output (-vv, -vvv, etc. to increase verbosity)"},
 		{"output", 'o', "OUTFILE", 0, "Output to OUTFILE instead of to standard output"},
 		{0}
 };
@@ -32,7 +32,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 	switch (key)
 	{
 	case 'v':
-		arguments->verbose = true;
+		arguments->verbose += 1;
 		break;
 
 	case 'o':
@@ -90,16 +90,13 @@ int main(int argc, char **argv)
 
     Options options;
     initOptions(&options);
-	
+
 	// ========= compiling stuff =========
 
-    // Array arr = newArray(0, 1, true);
-    // appendArray(&arr, int, 123);
-    // printf("%d\n", idxArray(arr, 0, int));
-    // return 0;
-
-    AssembleStatus status = assemble(&options, arguments.verbose,
+    AssembleStatus status = assemble(&options, arguments.verbose, &chunk,
         arguments.args[0], arguments.args[1], instr_src, asm_src);
+
+    if (status != ASSEMBLE_SUCCESS) return status;
 
 	// ========= output stuff =========
 
@@ -122,5 +119,5 @@ int main(int argc, char **argv)
 		arguments.outfile = newname;
 	}
 
-	return status;
+	return 0;
 }

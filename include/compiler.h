@@ -7,16 +7,23 @@
 typedef struct
 {
 	int bitwidth;
+	int opcode;
 	char *name;
 } Arg;
 
 // instruction
 typedef struct
 {
-	int opcode;
 	char *name;
 	Array args;
 } Instruction;
+
+// label
+typedef struct
+{
+	int address;
+	char *name;
+} Label;
 
 // output format type
 typedef enum
@@ -35,9 +42,9 @@ typedef struct
 } Options;
 
 // functions
-Instruction newInstruction(int opcode, const char *name);
+Instruction newInstruction(Array Args_array, const char *name);
 void initOptions(Options *options);
-AssembleStatus assemble(Options *options, bool verbose,
+AssembleStatus assemble(Options *options, int verbose, Chunk *chunk,
 	const char *instr_path, const char *asm_path,
 	const char *instr_src, const char *asm_src);
 #endif

@@ -42,6 +42,16 @@ void _appendArray(Array *array, void *item);
 //     (_newArray(/*sizeof(type),*/ initCount, growConstant, addNotMultiplySize))
 #define appendArray(array, type, item) \
     (_appendArray(array, &(type){item}))
+
+#define appendArrayCpy(array, item) \
+    (_appendArray(array, memcpy(malloc(sizeof(item)), &item, sizeof(item))))
+
+// #define appendArrayCpy(array,item) do { \
+  void *new = malloc(sizeof(item)); \
+  memcpy(new,&(item),sizeof(item)); \
+  _appendArray(array,new); \
+} while (0)
+
 #define idxArray(array, index, type) \
     (*(type *)array.items[index])
 
@@ -64,6 +74,7 @@ bool strend(const char *str, const char *end);
 size_t utf8len(char *s);
 char *toUpper(const char *str);
 
+int bitlen(uint32_t value);
 char *readFile(const char *path);
 void writeBinFile(const char *path, uint8_t *bytes, int byteCount);
 

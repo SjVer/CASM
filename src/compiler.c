@@ -1,12 +1,11 @@
 #include "common.h"
 #define INVALID_CONSUME -1
 
-Instruction newInstruction(int opcode, const char *name)
+Instruction newInstruction(Array Args_array, const char *name)
 {
 	Instruction instr;
-	instr.opcode = opcode;
 	instr.name = cpystr(name, strlen(name));
-	instr.args = newArray(0, 1, true);
+	instr.args = Args_array;
 	return instr;
 }
 
@@ -23,7 +22,8 @@ void initOptions(Options *options)
 // =============================
 
 char *curFile;
-bool verbose;
+int verbose;
+Array instructions;
 
 // displays an error with the given token and message
 static void errorAt(const char *part, int line, const char *message)
@@ -56,13 +56,38 @@ int lineNo;
 
 static void *consumeIntMacro(const char *part, const char *name, bool inList)
 {
-	if (!isnum(strpstr(part, " "), false))
+	char *str = strpstr(part, " ");
+
+	// hexadecimal
+	if (strstart(str, "0x"))
 	{
-		errorAt(curLine, lineNo, fstr("%s expects %s, not '%s'.", 
-			name, inList ? "integers" : "an integer", part));
-		return (void *)INVALID_CONSUME;
+		for (int i = 2; i < strlen(str); i++)
+			if (!(tolower(str[i]) >= '0' && tolower(str[i]) <= 'f'))
+			{	
+				errorAt(curLine, lineNo, fstr("'%s' is not a valid hexadecimal number.", str));
+				return (void *)INVALID_CONSUME;
+			}
+		return ADDR(int, strtol(str + 2, NULL, 16));
 	}
-	return ADDR(int, atoi(part));
+
+	// binary
+	else if (strstart(str, "0b"))
+	{
+		for (int i = 2; i < strlen(str); i++)
+			if (str[i] != '0' && str[i] != '1')
+			{	
+				errorAt(curLine, lineNo, fstr("'%s' is not a valid hexadecimal number.", str));
+				return (void *)INVALID_CONSUME;
+			}
+		return ADDR(int, strtol(str + 2, NULL, 2));
+	}
+
+	// decimal
+	else if (isnum(str, false)) return ADDR(int, atoi(part));
+
+	errorAt(curLine, lineNo, fstr("%s expects %s, not '%s'.", 
+		name, inList ? "integers" : "an integer", part));
+	return (void *)INVALID_CONSUME;
 }
 
 static void *consumeStr(const char *part, const char *name, bool inList)
@@ -108,8 +133,6 @@ static Array consumeList(const char *part, const char *name, consumeFn fn)
 static int consumeIntMaybe(const char *part)
 {
 	char *str = strpstr(strpstr(part, " "), "\t");
-
-	printf("%s ", str);
 
 	// normal int
 	if (isnum(str, false)) return atoi(str);
@@ -303,7 +326,24 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 					return ASSEMBLE_INVALID_DECL;
 				}
 				
-				_appendArray(&args, strcpy(malloc(strlen(curWord) + 1), curWord));
+				// seperate and handle name and bitwidth
+				Array parts = spltstr(cpystr(curWord + 1, strlen(curWord) - (strend(curWord, ":") ? 3 : 2)), ":");
+				if (parts.used != 2)
+				{
+					errorAt(curWord, lineNo, "Expect '{name:bitwidth}'.");
+					return ASSEMBLE_INVALID_DECL;
+				}
+				
+				// create arg
+				Arg arg;
+				arg.bitwidth = *(int *)consumeIntMacro(idxArray(&parts, 1, char*), "argument bitwidth", false);
+				if (arg.bitwidth == INVALID_CONSUME) return ASSEMBLE_INVALID_DECL;
+				arg.name = cpystr(idxArray(&parts, 0 , char*), strlen(idxArray(&parts, 0 , char*)));
+
+				// _appendArray(&args, strcpy(malloc(strlen(curWord) + 1), curWord));
+				// _appendArray(&argsW, memcpy(malloc(sizeof bitwidth), &bitwidth, sizeof bitwidth));
+				// _appendArray(&args, memcpy(malloc(sizeof arg), &arg, sizeof arg));
+				appendArrayCpy(&args, arg);
 
 				if (strend(curWord, ":"))
 				{
@@ -335,11 +375,21 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 			}
 			else // instruction
 			{
+				#define CURWORD (strpstr(strpstr(idxArray(&words, i, char*), " "), "\t"))
+
 				char *name = idxArray(&words, 0, char*);
-				printf("\n== %s ==\n", name);
+
+				if (i == words.used)
+				{
+					// last word, expect newline and then the rest
+					lineNo++; i = 0;
+					curLine = idxArray(&spltstr(idxArray(&lines, lineNo - 1, char*), ";"), 0, char*);
+					words = spltstr(curLine, " ");
+				}
 
 				// skip tabs
-				char *equals = strpstr(idxArray(&words, i, char*), " ");
+				// char *equals = strpstr(idxArray(&words, i, char*), " ");
+				char *equals = CURWORD;
 				while (true)
 				{
 					equals = strpstr(equals, "\t");
@@ -361,25 +411,121 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 
 				i++;
 
-				// format
+				// format/arguments
+
+				Array usedArgs = newArray(0, 1, true);
+				
+				#define PRINTARG(prefix, arg) \
+					printf("%sarg.name: '%s'\n%sarg.opcode: %d\n%sarg.bitwidth: %d\n", \
+						prefix, arg.name, prefix, arg.opcode, prefix, arg.bitwidth)   \
+
 				while (true)
 				{
-					// TODO: Check if there are more words
-					// 		 if not, newline + tab + rest is allowed
+					if (i == words.used) // allow newline
+					{
+						// last word, expect newline (tabs?) and then the rest
+						lineNo++; i = 0;
+						curLine = idxArray(&spltstr(idxArray(&lines, lineNo - 1, char*), ";"), 0, char*);
+						words = spltstr(curLine, " ");
 
-					char *curWord = idxArray(&words, i, char*);
-					int opcode = consumeIntMaybe(curWord);
+						// skip all tabs
+						while (strlen(CURWORD) == 0)
+							i++;
+					}
+
+					char *curWord = CURWORD;
+					int opcode = consumeIntMaybe(idxArray(&spltstr(curWord, "`"), 0, char*));
 					
-					if (opcode == INVALID_CONSUME)
-						return ASSEMBLE_INVALID_DECL;
-					
-					printf("-> %d\n", opcode);
+					if (opcode == INVALID_CONSUME) // no int, maybe argument?
+					{
+						// check if argument exists
+						Arg arg;
+						bool found = false;
+						
+						for (int j = 0; j < args.used; j++)
+						{
+							arg = idxArray(args, j, Arg);
+							// printf("  arg: %s : %d\n", arg.name, arg.bitwidth);
+							if (strcmp(arg.name, curWord) == 0) { found = true; break; }
+						}
+						
+						if (!found) // undefined argument
+						{
+							errorAt(curWord, lineNo, "undefined argument.");
+							return ASSEMBLE_INVALID_DECL;
+						}
+						
+						appendArrayCpy(&usedArgs, arg);
+					}
+					else
+					{
+						Arg opcodeArg;
+						opcodeArg.name = "";
+						if (spltstr(curWord, "`").used != 1)
+						{
+							Array parts = spltstr(curWord, "`");
+							if (parts.used != 2) // invalid bitwidth specifier
+							{
+								errorAt(curWord, lineNo, "invalid bitwidth specifier.");
+								return ASSEMBLE_INVALID_DECL;
+							}
 
-					// Instruction instr = newInstruction(opcode, name);
+							opcodeArg.bitwidth = *(int *)consumeIntMacro(
+								idxArray(&parts, 1, char*), "bitwidth specifier", false);
+							if (opcodeArg.bitwidth == INVALID_CONSUME) return ASSEMBLE_INVALID_DECL; 
+						}
+						else opcodeArg.bitwidth = bitlen(opcode);
 
-					break;
+						opcodeArg.opcode = opcode;
+
+						// PRINTARG("=== ", opcodeArg);
+						appendArrayCpy(&usedArgs, opcodeArg);
+					}
+
+					i++;
+					if (i == words.used) // allow newline
+					{
+						// if last word is '+' a newline is allowed, otherwise not
+						if (strcmp(curWord, "+") != 0) break;
+
+						lineNo++; i = 0;
+						curLine = idxArray(&spltstr(idxArray(&lines, lineNo - 1, char*), ";"), 0, char*);
+						words = spltstr(curLine, " ");
+
+						// skip all tabs
+						while (strlen(CURWORD) == 0)
+							i++;						
+					}
+					else // consume one '+'
+					{
+						if (strcmp(CURWORD, "+") != 0)
+						{
+							errorAt(CURWORD, lineNo, "expected '+'.");
+							return ASSEMBLE_INVALID_DECL;
+						}
+						i++;
+					}
+
 				}
 
+				// create instruction
+				Instruction instr = newInstruction(usedArgs, name);
+				appendArrayCpy(&instructions, instr);
+
+				/*
+				printf("\n=== %s ===\n", instr.name);
+				for (int i = 0; i < instr.args.used; i++)
+				{
+					printf("\n");
+					Arg arg = idxArray(instr.args, i, Arg);
+					if (strlen(arg.name) != 0) printf("name: %s\n", arg.name);
+					else printf("opcode: %d\n", arg.opcode);
+					printf("bitwidth: %d\n", arg.bitwidth);
+				}
+				*/
+
+				#undef PRINTARG
+				#undef CURWORD
 			}
 
 		}
@@ -388,13 +534,151 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 	return ASSEMBLE_SUCCESS;
 }
 
-AssembleStatus assemble(Options *options, bool _verbose,
+static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *chunk)
+{
+	// split into lines
+	Array lines = spltstr(src, "\n");
+	Array labels = newArray(0, 1, true);
+
+
+	for (lineNo = 1; lineNo < lines.used + 1; lineNo++)
+	{
+		curLine = idxArray(&spltstr(idxArray(&lines, lineNo - 1, char*), ";"), 0, char*);
+		curLine = strpstr(curLine, " ");
+		Array words = spltstr(curLine, " ");
+
+		#define WORD(i) (strpstr(strpstr(idxArray(&words, i, char*), " "), "\t"))
+
+		if (strstart(curLine, "\t")) // indented thus instruction
+		{
+			curLine = strpstr(curLine, "\t");
+			char *curWord = WORD(0);
+			
+			Instruction instr;
+
+			// search instructions for match
+			bool found = false;
+			for (int i = 0; i < instructions.used; i++)
+			{
+				if (strcmp(curWord, idxArray(instructions, i, Instruction).name) == 0)
+				{
+					instr = idxArray(instructions, i, Instruction);
+					found = true;
+					break;
+				}
+			}
+
+			if (!found)
+			{
+				// errorAt(curWord, lineNo, "undefined instruction.");
+				// return ASSEMBLE_INVALID_INSTR;
+			}
+			else
+			{
+				// printf("\n=== %s ===\n", instr.name);
+				for (int i = 0; i < instr.args.used; i++)
+				{
+					Arg arg = idxArray(instr.args, i, Arg);
+
+					if (strlen(arg.name) != 0) // argument
+					{
+						// printf("arg: '%s' (%d bits)\n", arg.name, arg.bitwidth);
+					}
+					else // constant/opcode thing
+					{
+						int opcode = *(int *)malloc(arg.bitwidth / 8);
+						opcode = arg.opcode;
+
+						// printf("opcode: %d (%zu bits)\n", opcode, sizeof(opcode)); //arg.bitwidth);
+						writeChunk(chunk, opcode, lineNo);
+					}
+				}
+			}
+		}
+		
+		else // label or ...?
+		{
+			char *curWord = WORD(0);
+
+			if (strend(curWord, ":")) // check if label
+			{
+				if (words.used > 1)
+				{
+					errorAt(curLine, lineNo, "invalid label declaration.");
+					return ASSEMBLE_INVALID_LABEL;
+				}
+
+				Label label = {
+					chunk->count + 1,
+					cpystr(curWord, strlen(curWord) - 1)
+				};
+
+				appendArrayCpy(&labels, label);
+				
+				msgAt(lineNo, fstr("Label '%s' defined at address 0x%x.", label.name, label.address));
+			}
+			else
+			{
+				// TODO: other things than labels perhaps?
+				errorAt(curLine, lineNo, "invalid statement. (Expected indent or label.)");
+				return ASSEMBLE_INVALID_LABEL;
+			}
+		}
+	}
+
+	return ASSEMBLE_SUCCESS;
+}
+
+AssembleStatus assemble(Options *options, int _verbose, Chunk *chunk,
 	const char *instr_path, const char *asm_path,
 	const char *instr_src, const char *asm_src)
 {
 	verbose = _verbose;
+	instructions = newArray(0, 1, true);
+
+	if (verbose > 1) printf("~ Parsing %s...\n", instr_path);
 
 	curFile = cpystr(instr_path, strlen(instr_path));
 	AssembleStatus instrStatus = compileInstrFile(options, instr_src);
-	return instrStatus;
+
+	if (instrStatus != ASSEMBLE_SUCCESS) return instrStatus;
+
+	if (verbose > 1) // debug message
+	{
+		printf("~ Parsing %s done.\n~ Instructions:\n", instr_path);
+		for (int j = 0; j < instructions.used; j++)
+		{
+			Instruction instr = idxArray(instructions, j, Instruction);
+			printf(" %s:\n", instr.name);
+			for (int i = 0; i < instr.args.used; i++)
+			{
+				Arg arg = idxArray(instr.args, i, Arg);
+				if (strlen(arg.name) != 0) printf("   %d: argument: %s, ", i, arg.name);
+				else printf("   %d: constant: %d, ", i, arg.opcode);
+				printf("bitwidth: %d\n", arg.bitwidth);
+			}
+		}
+	}
+
+	if (verbose > 1) printf("~ Assembling %s...\n", asm_path);
+
+	curFile = cpystr(asm_path, strlen(asm_path));
+	AssembleStatus asmStatus = assembleAsmFile(options, asm_src, chunk);
+
+	if (verbose > 1) // print chunk
+	{
+		printf("~ Assembling %s done.\n~ Assembled output:\n (line 1) ", asm_path);
+	
+		int lastLine = 1;
+		for (int i = 0; i < chunk->count; i++)
+		{
+			if (chunk->lines[i] != lastLine) printf("\n (line %d) ", chunk->lines[i]);
+			printf("0x%.*x ", options->bitwidth / 4, chunk->bytes[i]);
+			lastLine = chunk->lines[i];
+		}
+		if (chunk->count == 0) printf("(No output)");
+		printf("\n");
+	}
+
+	return asmStatus;
 }
