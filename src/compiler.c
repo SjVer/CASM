@@ -576,27 +576,34 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 			else
 			{
 				printf("\n=== %s (%d) ===\n", instr.name, instr.argc);
+				
 				typedef struct { int value; int bitwidth; } Bits;
 				Array allBits = newArray(0, 1, true);
 
-				int argNo = 1;
+				/*
+				int argNo = 1; // keep seperate count of args since argcount and wordcount can differ
 				for (int wordNo = 0; wordNo < instr.args.used; wordNo++)
 				{
 					Arg arg = idxArray(instr.args, wordNo, Arg);
 
-					if (strlen(arg.name) != 0) // argument
+					// check if it's an argument
+					if (strlen(arg.name) != 0)
 					{
 						curWord = WORD(wordNo);
-						printf("arg '%s' (%d/%d words, %d/%d args)\n", 
+					
+						printf("arg '%s' (%d/%zu words, %d/%d args)\n", 
 							curWord, wordNo + 1, words.used, argNo, instr.argc);
 					
-						if (argNo < instr.argc) // consume ','
+						// if it's not the last consume a ','
+						if (argNo < instr.argc)
 						{
-							if (!strend(curWord, ","))
+							if (!strend(curWord, ",") && strcmp(WORD(wordNo + 1), ",") != 0)
 							{
+								printf("'%s'\n", WORD(wordNo + 1));
 								errorAt(curWord, lineNo, "expected ',' after argument.");
 								return ASSEMBLE_INVALID_ARGS;
 							}
+							if (strcmp(WORD(wordNo + 1), ",") == 0) wordNo++;
 						}
 						else // expect no other words
 						{
@@ -608,15 +615,78 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 								return ASSEMBLE_INVALID_ARGS;
 							}
 						}
+						
 						argNo++;
 					}
 					else // constant/opcode thing
 					{
-						printf("opc: 0x%x (%d/%d)\n", idxArray(instr.args, wordNo, Arg).opcode, wordNo + 1, words.used);
+						printf("opc: 0x%x (%d/%zu)\n", idxArray(instr.args, wordNo, Arg).opcode, wordNo + 1, words.used);
+						
 						// int opcode = *(int *)malloc(arg.bitwidth / 8);
 						Bits bits = { arg.opcode, arg.bitwidth };
 						appendArrayCpy(&allBits, bits);
 					}
+				}
+				*/
+
+				int wordNo = 1;
+				for (int argNo = 0; argNo < instr.args.used; argNo++)
+				{
+					Arg curArg = idxArray(instr.args, argNo, Arg);
+					
+					// check if constant -> just write it and continue
+					if (strlen(curArg.name) == 0)
+					{
+						Bits bits;
+						bits.value = curArg.opcode;
+						bits.bitwidth = curArg.bitwidth;
+						appendArrayCpy(&allBits, bits);
+						continue;
+					}
+
+					// we now know we're dealing with an argument
+
+					// check if no words left -> error
+					if (wordNo >= words.used)
+					{
+						errorAt(curLine, lineNo, fstr("Expected %d arguments.", instr.argc));
+						return ASSEMBLE_INVALID_ARGS;
+					}
+
+					curWord = WORD(wordNo);
+					printf("arg %d: '%s' (%d), ", argNo, curArg.name, curArg.bitwidth);
+					// printf("in src: '%s'\n", curWord);
+
+					// handle arg
+					int result = consumeIntMaybe(strpstrb(curWord, ","));
+					if (result == INVALID_CONSUME)
+					{
+						// TODO: CHECK IF LABEL
+
+						errorAt(strpstrb(curWord, ","), lineNo + 1, "invalid integer or undefined label.");
+						// return ASSEMBLE_INVALID_ARGS;
+					}
+					printf("parsed: %d\n", result);
+
+					wordNo++;
+
+					// possibly skip one ',' if it wasn't at the end of the previous word
+					if (argNo < instr.argc && !strend(curWord, ","))
+					{
+						if (wordNo >= words.used || (strcmp(WORD(wordNo), ",") != 0))
+						{
+							errorAt(curLine, lineNo + 1, fstr("Expected %d arguments seperated by commas.", instr.argc));
+							return ASSEMBLE_INVALID_ARGS;
+						}
+						wordNo++;
+					}
+				}
+
+				// no more words should be left by now
+				if (wordNo != words.used)
+				{
+					errorAt(WORD(wordNo), lineNo + 1, fstr("Expected %d arguments.", instr.argc));
+					return ASSEMBLE_INVALID_ARGS;
 				}
 
 				printf("0x");
