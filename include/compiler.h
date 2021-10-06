@@ -3,6 +3,8 @@
 
 #include "common.h"
 
+#define OUTPUT_PRINT_COUNT 8
+
 // argument for instructions
 typedef struct
 {
@@ -26,6 +28,16 @@ typedef struct
 	char *name;
 } Label;
 
+// temp label
+typedef struct
+{
+	char *name;
+	// address = index in chunk
+	// bitpos = index of bits of instruction
+	//			where the value starts
+	int address, bitpos, bitwidth, line;
+} TmpLabel;
+
 // output format type
 typedef enum
 {
@@ -39,7 +51,10 @@ typedef struct
 	int bitwidth;
 	OutputType outputType;
 	char *extension;
-	void *prefix, *suffix, *format;
+	int *prefix, prefixLen;
+	int *suffix, suffixLen;
+	int *format, formatLen;
+	bool padLeading;
 } Options;
 
 // functions

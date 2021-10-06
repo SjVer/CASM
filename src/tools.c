@@ -111,6 +111,41 @@ char *strpstrf(const char *str, const char *delim) { return _strpstr(str, delim,
 // strip back of string using delim as delimeter
 char *strpstrb(const char *str, const char *delim) { return _strpstr(str, delim, false, true); }
 
+// escapes a string with shit like "\n" (actually "\\n") in it
+char *escstr(const char *str)
+{
+    char *ret = "";
+
+    for (int i = 0; i < strlen(str); i++)
+    {
+        if (str[i] == '\\')
+        {
+            if (i + 1 < strlen(str)) // char after '\'
+            {
+                i++; // go to next char
+                switch (str[i])
+                {
+                case 'a': ret = fstr("%s\a", ret); break;
+                case 'b': ret = fstr("%s\b", ret); break;
+                case 'e': ret = fstr("%s\e", ret); break;
+                case 'f': ret = fstr("%s\f", ret); break;
+                case 'n': ret = fstr("%s\n", ret); break;
+                case 'r': ret = fstr("%s\r", ret); break;
+                case 't': ret = fstr("%s\t", ret); break;
+                case 'v': ret = fstr("%s\v", ret); break;
+                case '\\': ret = fstr("%s\\", ret); break;
+                case '\'': ret = fstr("%s\'", ret); break;
+                case '\"': ret = fstr("%s\"", ret); break;
+                }
+            }
+        }
+        else
+            ret = fstr("%s%c", ret, str[i]);
+    }
+
+    return ret;
+}
+
 // formats a string
 char *fstr(const char *format, ...)
 {
@@ -186,6 +221,14 @@ size_t utf8len(char *s)
 }
 
 
+// returns the binary representation of the given int as a string
+char *bitsf(int value, int len)
+{
+    char *ret = "";
+    while (len--)
+        ret = fstr("%s%c", ret, '0' + ((value >> len) & 1));
+    return ret;
+}
 
 
 int bitlen(uint32_t value)
@@ -234,12 +277,37 @@ char *readFile(const char *path)
 	return buffer;
 }
 
-// write word array to binary file with path
-void writeBinFile(const char *path, uint8_t *bytes, int byteCount)
+// pan the given array of ints to uint8_t's
+int panToUint8Arr(int *values, int count, int bitwidth, uint8_t **buffer)
 {
-    FILE *outfile = fopen(path, "wb");
-    fwrite(bytes, sizeof(uint8_t) * byteCount, 1, outfile);
-    fclose(outfile);
+    char *bitsstr = "";
+
+    // convert to binary and merge
+    for (int i = 0; i < count; i++)
+        bitsstr = fstr("%s%s", bitsstr, bitsf(values[i], bitwidth));
+    // // printf("== %s (%zu : %zu)\n", bitsstr, strlen(bitsstr), strlen(bitsstr) / 8);
+
+    // pad with trailing zeros to multiple of 8
+    for (int i = -strlen(bitsstr) % 8; i; i--)
+        bitsstr = fstr("%s0", bitsstr);
+    // // printf("== %s (%zu : %zu)\n", bitsstr, strlen(bitsstr), strlen(bitsstr) / 8);
+
+
+    // convert into an array of uint8_t's
+    int length = strlen(bitsstr) / 8;
+    *buffer = malloc(sizeof(uint8_t) * length);
+
+    for (int i = 0; i < length; i++)
+    {
+        // // printf("int #%d: '%s' = %d (%zu chars left)\n",
+        // //     i, cpystr(bitsstr + 8 * i, 8),
+        // //     (uint8_t)strtol(cpystr(bitsstr + 8 * i, 8), NULL, 2),
+        // //     strlen(bitsstr + 8 * i));
+
+        (*buffer)[i] = (uint8_t)strtol(cpystr(bitsstr + 8 * i, 8), NULL, 2);
+    }
+    
+    return length;
 }
 
 // converts the given string to uppercase

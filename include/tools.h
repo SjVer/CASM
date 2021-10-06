@@ -67,15 +67,17 @@ char *_strpstr(const char *str, const char *delim,
                bool front, bool back);
 char *strpstrf(const char *str, const char *delim);
 char *strpstrb(const char *str, const char *delim);
+char *escstr(const char *str);
 char *fstr(const char *format, ...);
 bool isnum(const char *str, bool float_allowed);
 bool strstart(const char *str, const char* start);
 bool strend(const char *str, const char *end);
 size_t utf8len(char *s);
+char *bitsf(int value, int len);
 char *toUpper(const char *str);
 
 int bitlen(uint32_t value);
 char *readFile(const char *path);
-void writeBinFile(const char *path, uint8_t *bytes, int byteCount);
+int panToUint8Arr(int *values, int count, int bitwidth, uint8_t **buffer);
 
 #endif

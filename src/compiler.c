@@ -13,18 +13,23 @@ static Instruction newInstruction(Array Args_array, int argc, const char *name)
 void initOptions(Options *options)
 {
 	options->bitwidth = DEFAULT_BITWIDTH;
-	options->extension = cpystr("", 0);
-	options->format = cpystr("", 0);
 	options->outputType = TYPE_BINARY;
-	options->prefix = cpystr("", 0);
-	options->suffix = cpystr("", 0);
+	options->extension = cpystr("", 0);
+	options->padLeading = false;
+	
+	options->format = NULL;
+	options->formatLen = 0;
+	options->prefix = NULL;
+	options->prefixLen = 0;
+	options->suffix = NULL;
+	options->suffixLen = 0;
 }
 
 // =============================
 
 char *curFile;
 int verbose;
-Array instructions;
+Array instructions, definedLabels, tmpLabels;
 
 // displays an error with the given token and message
 static void errorAt(const char *part, int line, const char *message)
@@ -47,6 +52,50 @@ static void errorAt(const char *part, int line, const char *message)
 static void msgAt(int line, const char *msg)
 {
 	if (verbose) fprintf(stdout, "[%s:%d] %s\n", curFile, line, msg);
+}
+
+static bool verifyFormat(const char* format)
+{
+	bool ISSPEC(char ch)
+	{
+		for (int i = 0; i < specifierCount; i++)
+			if (ch == specifiers[i]) return true;
+		return false;
+	}
+
+	int i = 0;
+	while (i < strlen(format))
+	{
+		// cannot have '}' before '{'
+		if (format[i] == '}') return false;
+
+		if (format[i] == '{')
+		{
+			// at least two more chars (specifier and '}')
+			if (i + 2 >= strlen(format)) return false;
+			i++; // char is now the one after '{'
+
+			if (!(ISSPEC(format[i]) || format[i] == '#')) return false;
+			
+			// if '#' then a specifier is a must
+			if (format[i] == '#')
+			{
+				i++;
+
+				// specifier and at least two more chars (specifier and '}')
+				if (i + 1 >= strlen(format) || !ISSPEC(format[i])) return false;
+				i++;
+
+				// expect '}'
+				if (format[i] != '}') return false;
+			}
+			i++;
+
+		}
+
+		i++;
+	}
+	return true;
 }
 
 // =============================
@@ -225,6 +274,7 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 						prefix[i] = idxArray(args, i, int);
 
 					options->prefix = prefix;
+					options->prefixLen = args.used;
 
 					char *msg = "Prefix set to '";
 					for (int i = 0; i < args.used; i++)
@@ -237,7 +287,8 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 					char *prefix = consumeStr(arg, "option 'prefix'", false);
 					if (prefix == (char *)INVALID_CONSUME) return ASSEMBLE_INVALID_OPTION;
 					
-					options->prefix = prefix;
+					options->prefix = (int *)prefix;
+					options->prefixLen = strlen(prefix);
 					msgAt(lineNo, fstr("Prefix set to '%s'.", options->prefix));
 				}
 			}
@@ -255,7 +306,8 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 					for (int i = 0; i < args.used; i++)
 						suffix[i] = idxArray(args, i, int);
 
-					options->suffix = suffix;
+					options->suffix = (int *)suffix;
+					options->suffixLen = args.used;
 
 					char *msg = "Suffix set to '";
 					for (int i = 0; i < args.used; i++)
@@ -268,7 +320,8 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 					char *suffix = consumeStr(arg, "option 'suffix'", false);
 					if (suffix == (char *)INVALID_CONSUME) return ASSEMBLE_INVALID_OPTION;
 					
-					options->suffix = suffix;
+					options->suffix = (int *)suffix;
+					options->suffixLen = strlen(suffix);
 					msgAt(lineNo, fstr("Suffix set to '%s'.", options->prefix));
 				}
 			}
@@ -287,10 +340,37 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 				{
 					char *format = consumeStr(arg, "option 'format'", false);
 					if (format == (char *)INVALID_CONSUME) return ASSEMBLE_INVALID_OPTION;
-					
-					options->format = format;
+
+					if (!verifyFormat(format))
+					{
+						errorAt(curLine, lineNo, "invalid format.");
+						return ASSEMBLE_INVALID_OPTION;
+					}
+
+					options->format = (int *)format;
+					options->formatLen = strlen(format);
 					msgAt(lineNo, fstr("Format set to '%s'.", options->format));
 				}
+			}
+
+			// #pad {"trailing"|"leading"}
+			else if (strstart(curLine + 1, "pad"))
+			{
+				char *arg = strpstr(curLine + 5, " ");
+
+				if (strcmp(arg, "trailing") == 0)
+					options->padLeading = false;
+				else if (strcmp(arg, "leading") == 0)
+					options->padLeading = true;
+				
+				else
+				{
+					errorAt(curLine, lineNo, 
+						fstr("option 'pad' expects 'leading' or 'trailing', not '%s'.", arg));
+					return ASSEMBLE_INVALID_OPTION;
+				}
+
+				msgAt(lineNo, fstr("Pad mode set to %s.", arg));
 			}
 
 			// invalid option
@@ -538,7 +618,8 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 {
 	// split into lines
 	Array lines = spltstr(src, "\n");
-	Array labels = newArray(0, 1, true);
+	definedLabels = newArray(0, 1, true);
+	tmpLabels = newArray(0, 1, true);
 
 
 	for (lineNo = 1; lineNo < lines.used + 1; lineNo++)
@@ -575,59 +656,11 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 			}
 			else
 			{
-				printf("\n=== %s (%d) ===\n", instr.name, instr.argc);
+				//// printf("\n=== %s (%d) ===\n", instr.name, instr.argc);
 				
 				typedef struct { int value; int bitwidth; } Bits;
 				Array allBits = newArray(0, 1, true);
-
-				/*
-				int argNo = 1; // keep seperate count of args since argcount and wordcount can differ
-				for (int wordNo = 0; wordNo < instr.args.used; wordNo++)
-				{
-					Arg arg = idxArray(instr.args, wordNo, Arg);
-
-					// check if it's an argument
-					if (strlen(arg.name) != 0)
-					{
-						curWord = WORD(wordNo);
-					
-						printf("arg '%s' (%d/%zu words, %d/%d args)\n", 
-							curWord, wordNo + 1, words.used, argNo, instr.argc);
-					
-						// if it's not the last consume a ','
-						if (argNo < instr.argc)
-						{
-							if (!strend(curWord, ",") && strcmp(WORD(wordNo + 1), ",") != 0)
-							{
-								printf("'%s'\n", WORD(wordNo + 1));
-								errorAt(curWord, lineNo, "expected ',' after argument.");
-								return ASSEMBLE_INVALID_ARGS;
-							}
-							if (strcmp(WORD(wordNo + 1), ",") == 0) wordNo++;
-						}
-						else // expect no other words
-						{
-							curWord = WORD(wordNo);
-							if (wordNo + 1 < words.used || strend(curWord, ","))
-							{
-								errorAt(WORD(wordNo + (strend(curWord, ",") ? 0 : 1)), lineNo, 
-									fstr("Expected %d argument%s.", instr.argc, instr.argc != 1 ? "s" : ""));
-								return ASSEMBLE_INVALID_ARGS;
-							}
-						}
-						
-						argNo++;
-					}
-					else // constant/opcode thing
-					{
-						printf("opc: 0x%x (%d/%zu)\n", idxArray(instr.args, wordNo, Arg).opcode, wordNo + 1, words.used);
-						
-						// int opcode = *(int *)malloc(arg.bitwidth / 8);
-						Bits bits = { arg.opcode, arg.bitwidth };
-						appendArrayCpy(&allBits, bits);
-					}
-				}
-				*/
+				int totalBitCount = 0;
 
 				int wordNo = 1;
 				for (int argNo = 0; argNo < instr.args.used; argNo++)
@@ -637,10 +670,13 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 					// check if constant -> just write it and continue
 					if (strlen(curArg.name) == 0)
 					{
+						//// printf("const %d: %d (%d)\n", argNo, curArg.opcode, curArg.bitwidth);
 						Bits bits;
 						bits.value = curArg.opcode;
 						bits.bitwidth = curArg.bitwidth;
 						appendArrayCpy(&allBits, bits);
+
+						totalBitCount += bits.bitwidth;
 						continue;
 					}
 
@@ -654,19 +690,40 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 					}
 
 					curWord = WORD(wordNo);
-					printf("arg %d: '%s' (%d), ", argNo, curArg.name, curArg.bitwidth);
-					// printf("in src: '%s'\n", curWord);
+					//// printf("arg %d: '%s' (%d), ", argNo, curArg.name, curArg.bitwidth);
 
 					// handle arg
 					int result = consumeIntMaybe(strpstrb(curWord, ","));
-					if (result == INVALID_CONSUME)
+					if (result == INVALID_CONSUME) // tmpLabel stuff
 					{
-						// TODO: CHECK IF LABEL
+						// we add the label to the tmpLabels and check in the end if it is valid
+						curWord = strpstrb(curWord, ",");
 
-						errorAt(strpstrb(curWord, ","), lineNo + 1, "invalid integer or undefined label.");
-						// return ASSEMBLE_INVALID_ARGS;
+						TmpLabel label;
+						label.address = chunk->count;
+						label.bitpos = totalBitCount;
+						label.bitwidth = curArg.bitwidth;
+						label.line = lineNo;
+						label.name = cpystr(curWord, strlen(curWord));
+
+						appendArrayCpy(&tmpLabels, label);
+						totalBitCount += curArg.bitwidth;
 					}
-					printf("parsed: %d\n", result);
+
+					//// printf("parsed: %d\n", result);
+					
+					if (result == INVALID_CONSUME) result = 0xff; // temp
+
+
+					// write parsed argument
+					{
+						Bits bits;
+						bits.value = result;
+						bits.bitwidth = curArg.bitwidth;
+						appendArrayCpy(&allBits, bits);
+
+						totalBitCount += curArg.bitwidth;
+					}
 
 					wordNo++;
 
@@ -689,12 +746,30 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 					return ASSEMBLE_INVALID_ARGS;
 				}
 
-				printf("0x");
-				for (int i = 0; i < allBits.used; i++)
-					printf("%.*x", 
-						idxArray(allBits, i, Bits).bitwidth / 4,
-						idxArray(allBits, i, Bits).value);
-				printf("\n");
+				// convert parsed argument to int
+				int out;
+				{
+
+					// convert to binary string
+					char *bitsstr = "";
+					for (int i = 0; i < allBits.used; i++)
+					{
+						Bits bits = idxArray(allBits, i, Bits);
+						bitsstr = fstr("%s%s", bitsstr, bitsf(bits.value, bits.bitwidth));
+					}
+
+					// pad with trailing zeros
+					while (strlen(bitsstr) < options->bitwidth)
+						bitsstr = options->padLeading ? fstr("0%s", bitsstr) : fstr("%s0", bitsstr);
+
+					//// printf("output: 0b%s -> ", bitsstr);
+
+					out = strtol(bitsstr + 2, NULL, 2);
+					//// printf("0x%.*x (chunk->count = %d)\n", 
+					//// 	options->bitwidth / 4, out, chunk->count);
+					//// printf("=== ======== ===\n\n");
+				}
+				writeChunk(chunk, out, lineNo);
 			}
 		}
 		
@@ -710,12 +785,11 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 					return ASSEMBLE_INVALID_LABEL;
 				}
 
-				Label label = {
-					chunk->count + 1,
-					cpystr(curWord, strlen(curWord) - 1)
-				};
+				Label label;
+				label.address = chunk->count + 1;
+				label.name = cpystr(curWord, strlen(curWord) - 1);
 
-				appendArrayCpy(&labels, label);
+				appendArrayCpy(&definedLabels, label);
 				
 				msgAt(lineNo, fstr("Label '%s' defined at address 0x%x.", label.name, label.address));
 			}
@@ -726,6 +800,40 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 				return ASSEMBLE_INVALID_LABEL;
 			}
 		}
+	}
+
+	// replace all temp labels
+	for (int i = 0; i < tmpLabels.used; i++)
+	{
+		TmpLabel label = idxArray(tmpLabels, i, TmpLabel);
+		int newval = -1;
+
+		// search for label
+		for (int j = 0;j < definedLabels.used; j++)
+		{
+			Label lab = idxArray(definedLabels, i, Label);
+			if(strcmp(lab.name, label.name) == 0)
+			{ newval = lab.address; break; }
+		}
+
+		// not found?
+		if (newval == -1)
+		{
+			errorAt(label.name, label.line, "undefined label used.");
+			return ASSEMBLE_INVALID_LABEL;
+		}
+
+		//// printf("!!! replacing %d bits starting at bit %d at address %d with %d (label '%s')\n",
+		//// 	label.bitwidth, label.bitpos, label.address, newval, label.name);
+
+		char *bitsstr = bitsf(chunk->bytes[label.address], options->bitwidth);
+		//// printf("old bits: %s\n", bitsstr);
+	
+		char *newbits = bitsf(newval, label.bitwidth);
+		strncpy(bitsstr + label.bitpos, newbits, label.bitwidth);
+
+		//// printf("new bits: %s\n", bitsstr);
+		chunk->bytes[label.address] = (int)strtol(bitsstr, NULL, 2);
 	}
 
 	return ASSEMBLE_SUCCESS;
@@ -755,8 +863,8 @@ AssembleStatus assemble(Options *options, int _verbose, Chunk *chunk,
 			for (int i = 0; i < instr.args.used; i++)
 			{
 				Arg arg = idxArray(instr.args, i, Arg);
-				if (strlen(arg.name) != 0) printf("   %d: argument: %s, ", i, arg.name);
-				else printf("   %d: constant: %d, ", i, arg.opcode);
+				if (strlen(arg.name) != 0) printf("   %d: argument: %s, ", i + 1, arg.name);
+				else printf("   %d: constant: %d, ", i + 1, arg.opcode);
 				printf("bitwidth: %d\n", arg.bitwidth);
 			}
 		}
@@ -767,16 +875,25 @@ AssembleStatus assemble(Options *options, int _verbose, Chunk *chunk,
 	curFile = cpystr(asm_path, strlen(asm_path));
 	AssembleStatus asmStatus = assembleAsmFile(options, asm_src, chunk);
 
+	//// printf("\ndefined labels:\n");
+	//// for (int i = 0; i < definedLabels.used; i++)
+	//// {
+	//// 	Label lab = idxArray(definedLabels, i, Label);
+	//// 	printf(" at %d: %s\n", lab.address, lab.name);
+	//// }
+	//// printf("\n");
+
 	if (verbose > 1) // print chunk
 	{
-		printf("~ Assembling %s done.\n~ Assembled output:\n (line 1) ", asm_path);
+		printf("~ Assembling %s done.\n~ Assembled output:\n", asm_path);
 	
-		int lastLine = 1;
+		int printed = 0;
 		for (int i = 0; i < chunk->count; i++)
 		{
-			if (chunk->lines[i] != lastLine) printf("\n (line %d) ", chunk->lines[i]);
-			printf("0x%.*x ", options->bitwidth / 4, chunk->bytes[i]);
-			lastLine = chunk->lines[i];
+			printf(" 0x%.*x", options->bitwidth / 4, chunk->bytes[i]);
+			printed++;
+			if (printed >= OUTPUT_PRINT_COUNT)
+				{ printed = 0; printf("\n"); }
 		}
 		if (chunk->count == 0) printf("(No output)");
 		printf("\n");
