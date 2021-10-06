@@ -322,7 +322,7 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 					
 					options->suffix = (int *)suffix;
 					options->suffixLen = strlen(suffix);
-					msgAt(lineNo, fstr("Suffix set to '%s'.", options->prefix));
+					msgAt(lineNo, fstr("Suffix set to '%s'.", options->suffix));
 				}
 			}
 
