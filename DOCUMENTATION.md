@@ -35,6 +35,7 @@ Binary output mode:
 <br>
 Text output mode:
 <br>
+
 | Name | Type/Value | Default | Description |
 | --- | --- | --- | --- |
 | bits | integer | 8 | the amount of bits per outputted value/instruction |
