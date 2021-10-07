@@ -1,5 +1,6 @@
 [cli-version]: 0.0.1
-[file-version]: 0.1
+[x86-64-link]: https://github.com/SjVer/CASM/releases/download/0.1/casm_0.1_x86-64.deb
+[armv7l-link]: https://github.com/SjVer/CASM/releases/download/0.1/casm_0.1_armv7l.deb
 
 # CASM
 A fully customisable assembler for your own instruction sets!
@@ -57,8 +58,8 @@ Download the debian package:
 
 | | |
 | --- | --- |
-| x86_64 | [casm_0.1_x86-64.deb](https://github.com/SjVer/CASM/releases/download/0.1/casm_[file-version]_x86-64.deb) |
-| armv7l | [casm_0.1_armv7l.deb](https://github.com/SjVer/CASM/releases/download/0.1/casm_[file-version]_armv7l.deb) |
+| x86_64 | [casm_0.1_x86-64.deb][x86-64-link]
+| armv7l | [casm_0.1_armv7l.deb][armv7l-link]
 
 <br>
 <b>Step 2:</b>
