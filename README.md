@@ -21,8 +21,7 @@ casm [-v?V] [-o OUTFILE] [--output=OUTFILE] [--verbose] [--help]
 Options:
 <pre>
   -o, --output=OUTFILE       Output to OUTFILE instead of to standard output
-  -v, --verbose              Produce verbose output (-vv, -vvv, etc. to
-                             increase verbosity)
+  -v, --verbose              Produce verbose output (-vv for extra verbosity)
   -?, --help                 Give this help list
       --usage                Give a short usage message
   -V, --version              Print program version
