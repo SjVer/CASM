@@ -9,8 +9,12 @@ A fully customisable assembler for your own instruction sets!
 ### 🇨 What Is CASM?
 CASM, or Customisable Assembler is an assembler that uses user-defined instruction sets, macros and output options to assemble a given assembly file into binary or textual machine code.
 
+<br>
+
 ### 📚 Documentation
 Check out the documentation [here](DOCUMENTATION.md)!
+
+<br>
 
 ### 💻 Command-Line Usage
 Usage:
@@ -33,7 +37,7 @@ $ casm -v z80.instr kernel.asm -o mykernel
 $ casm -vv -w z80.instr kernel.asm -o mykernel
 </pre>
 
-<br><br>
+<br>
 
 ### 💾 How To Install CASM
 
