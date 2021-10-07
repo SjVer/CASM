@@ -33,9 +33,8 @@ Binary output mode:
 | pad | "leading"/"trailing" | "trailing" | wether the values that do not take up the specified amount of bits will be padded with zeros at the front or at the back |
 | prefix | integers | | the values that will come before the assembled code |
 | suffix | integers | | the values that will come after the assembled code |
-<br>
+
 Text output mode:
-<br>
 
 | Name | Type/Value | Default | Description |
 | --- | --- | --- | --- |
