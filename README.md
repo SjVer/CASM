@@ -57,8 +57,8 @@ Download the debian package:
 
 | | |
 | --- | --- |
-| x86_64 | [casm_0.1_x86-64.deb][x86-64-link]
-| armv7l | [casm_0.1_armv7l.deb][armv7l-link]
+| x86_64 | [casm_0.0.1_x86-64.deb][x86-64-link]
+| armv7l | [casm_0.0.1_armv7l.deb][armv7l-link]
 
 <br>
 <b>Step 2:</b>
