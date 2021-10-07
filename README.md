@@ -81,9 +81,9 @@ If you want to build CASM yourself, here's how to do it (on linux).
 
 <b>commands:</b>
 ```sh
-$ git clone https://github.com/SjVer/CASM.git
-$ cd ./CASM
-$ make
+git clone https://github.com/SjVer/CASM.git
+cd ./CASM
+make
 ```
 
 <b>example:</b>
