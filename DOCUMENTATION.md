@@ -85,17 +85,18 @@ W.I.P.
 
 <br>
 Here is an example instruction file:
+
 ```asm
 #type bin
 #bits 16
-#ext ".bin"
 #pad trailing
+#ext ".bin"
 
-lda {address:8} = 0x3`8 + address 
-ldi {value:12} = 0x4`4 + value   ; loads the given 12-bit value
-jmp {address:8} = 0x5`8 + address
+; instructions
+ldi {value:12} = 0x2`4 + value
+lda {address:8} = 0x3`8 + address
+jmp {address:8} = 0x4`8 + address
 ```
-
 
 ### Assembly Files
 Where the instruction file defines how the assembler will compile input, the assembly file is the actual input. 
