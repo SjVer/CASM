@@ -57,8 +57,8 @@ Download the debian package:
 
 | | |
 | --- | --- |
-| x86_64 | [casm_[file-version]_x86-64.deb](https://github.com/SjVer/CASM/releases/download/0.1/casm_[file-version]_x86-64.deb) |
-| armv7l | [casm_[file-version]_armv7l.deb](https://github.com/SjVer/CASM/releases/download/0.1/casm_[file-version]_armv7l.deb) |
+| x86_64 | [casm_0.1_x86-64.deb](https://github.com/SjVer/CASM/releases/download/0.1/casm_[file-version]_x86-64.deb) |
+| armv7l | [casm_0.1_armv7l.deb](https://github.com/SjVer/CASM/releases/download/0.1/casm_[file-version]_armv7l.deb) |
 
 <br>
 <b>Step 2:</b>
@@ -94,7 +94,7 @@ $ make
 [05/5] compiling main.c into main.o. done!
 [final] compiling final product casm. done!
 $ bin/casm --version
-casm [cli-version]
+casm 0.0.1
 ```
 
 The CASM executable should be in the `bin` directory. 
