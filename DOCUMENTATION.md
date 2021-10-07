@@ -34,7 +34,7 @@ Binary output mode:
 | suffix | integers | | the values that will come after the assembled code |
 <br>
 Text output mode:
-</b>]
+<br>
 | Name | Type/Value | Default | Description |
 | --- | --- | --- | --- |
 | bits | integer | 8 | the amount of bits per outputted value/instruction |
