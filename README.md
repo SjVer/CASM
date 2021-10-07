@@ -43,7 +43,7 @@ $ casm -vv -w z80.instr kernel.asm -o mykernel
 
 ### 💾 How To Install CASM
 
-NOTE: CASM HAS NOT YET BEEN RELEASED. </b>
+NOTE: CASM HAS NOT YET BEEN RELEASED. <br>
 If you want to try it anyway you can always clone this repository and build it yourself.
 
 #### 🐧 Linux
