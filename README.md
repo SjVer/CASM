@@ -13,6 +13,11 @@ CASM, or Customisable Assembler is an assembler that uses user-defined instructi
 Check out the documentation [here](DOCUMENTATION.md)!
 
 ### 💻 Command-Line Usage
+Usage:
+<pre>
+casm [-v?V] [-o OUTFILE] [--output=OUTFILE] [--verbose] [--help]
+    [--usage] [--version] INSTRFILE ASMFILE
+</pre>
 Options:
 <pre>
   -o, --output=OUTFILE       Output to OUTFILE instead of to standard output
