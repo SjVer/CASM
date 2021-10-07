@@ -46,7 +46,7 @@ Text output mode:
 | prefix | string | "" | the text that will come before the assembled code |
 | suffix | string | "" | the text that will come after the assembled code |
 
-It is important to keep in mind that when setting an option anywhere in the file, the assembler will continue assembling using the new options. In other words: setting options like `bits`, `type`, or any other option that has direct influence on the compilation process in the wrong order or e.g. after the declaration of an instruction might very well result in corrupted output.
+It is important to keep in mind that when setting an option anywhere in the file, the assembler will continue assembling using the new options. In other words: setting options like `bits`, `type`, or any other option that has direct influence on the compilation process in the wrong order or e.g. after the declaration of an instruction might very well result in corrupted output. It is reccommended to set all options at the beginning of the file, starting with the `type` option.
 
 #### Formats
 The option `format` can be used (when in text mode) to specify how the assembler will format the compiled instructions/values. In order to give the user as much freedom as possible the format option comes with a lot of features. </b>
@@ -74,6 +74,11 @@ The arguments have a syntax of their own: `{<name>:<bits>}` where `<bits>` is th
 The next part -the constants and arguments- requires the constants and/or arguments to be seperated by a `+`. Constants will be part of the assembled instruction/value just the way they are while arguments are replaced by the value given by the user in the assembly file. An example of this is the following: ``0x3`8 + address``.
 <br>
 Here, the assembled instruction/value will consist of the constant 3 in 8 bits followed by whatever argument is given as address in the amount of bits specified earlier. (In the case of `{address:8}` that's 8 bits.)
+</b>
+It is worth noting that if a constant is defined without size (a backtick followed by an integer) the assembler will automatically pick the lowest amount of bits possible. This might not be convinient so it is reccomended to always specify the width of a constant.
+<br>
+Combining all this knowledge a simple "load address" instruction could be defined as ``lda {address:8} = 0x3`8 + address``.
+If you were to set the type option to binary, the bits option to 16 and assemble `lda 5`, the output would be `0x0305`.
 
 ### Assembly Files
 stuff
