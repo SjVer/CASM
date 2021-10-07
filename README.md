@@ -70,8 +70,6 @@ $ sudo apt install ./<downloaded file>.deb
 ```
 This should install CASM on your device. To confirm the installation run `casm --version`.
 
-<br>
-
 #### 🪟 Windows
 
 Sadly, CASM on Windows is not yet supported. Maybe later!
@@ -79,8 +77,16 @@ Sadly, CASM on Windows is not yet supported. Maybe later!
 <br>
 
 ### 🔨 Building CASM
-If you want to build CASM yourself, here's how to do it (on linux):
+If you want to build CASM yourself, here's how to do it (on linux).
 
+<b>commands:</b>
+```sh
+$ git clone https://github.com/SjVer/CASM.git
+$ cd ./CASM
+$ make
+```
+
+<b>example:</b>
 ```sh
 $ git clone https://github.com/SjVer/CASM.git
 Cloning into 'CASM'...
@@ -99,7 +105,7 @@ $ make
 [05/5] compiling main.c into main.o. done!
 [final] compiling final product casm. done!
 $ bin/casm --version
-casm [cli-version]
+casm 0.0.1
 ```
 
 The CASM executable should be in the `bin` directory. 
