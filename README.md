@@ -48,6 +48,7 @@ Download the debian package:
 <br>
 <b>Step 2:</b>
 Go to the directory where you downloaded the `.deb` file and run the following command:
-```console
-$ sudo apt install ./downloadedfile.deb
+
+```sh
+$ sudo apt install ./<downloaded file>.deb
 ```
