@@ -24,15 +24,28 @@ These are the available options and their default values:
 <br>
 Binary output mode:
 </b>
+| Name | Type/Value | Default | Description |
+| --- | --- | --- | --- |
+| bits | integer | 8 | the amount of bits per outputted value/instruction |
+| ext | string | "" | the extension of the outputted file (if no name is specified with the -o cli argument) |
+| format | | |
+| type | "text"/"bin" | "bin" | the type of output (binary or text) |
+| pad | "leading"/"trailing" | "trailing" | wether the values that do not take up the specified amount of bits will be padded with zeros at the front or at the back |
+| prefix | integers | | the values that will come before the assembled code |
+| suffix | integers | | the values that will come after the assembled code |
+<br>
+Text output mode:
+</b>
 | Name | Allowed | Type/Value | Default | Description |
 | --- | --- | --- | --- | --- |
 | bits | yes | integer | 8 | the amount of bits per outputted value/instruction |
 | ext | yes | string | "" | the extension of the outputted file (if no name is specified with the -o cli argument) |
-| format | no | | |
+| format | yes | | |
 | type | yes | "text"/"bin" | "bin" | the type of output (binary or text) |
 | pad | yes | "leading"/"trailing" | "trailing" | wether the values that do not take up the specified amount of bits will be padded with zeros at the front or at the back |
 | prefix | yes | integers | | the values that will come before the assembled code |
 | suffix | yes | integers | | the values that will come after the assembled code |
+
 
 ### Assembly Files
 stuff
