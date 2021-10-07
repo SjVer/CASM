@@ -46,8 +46,7 @@ Text output mode:
 | prefix | string | "" | the text that will come before the assembled code |
 | suffix | string | "" | the text that will come after the assembled code |
 
-<br>
-It is important to keep in mind that when setting an option anywhere in the file, the assembler will continue assembling using the new options. In other words: setting options like `#bits`, `#type`, or any other option that has direct influence on the compilation process in the wrong order or e.g. after the declaration of an instruction might very well result in corrupted output.
+It is important to keep in mind that when setting an option anywhere in the file, the assembler will continue assembling using the new options. In other words: setting options like `bits`, `type`, or any other option that has direct influence on the compilation process in the wrong order or e.g. after the declaration of an instruction might very well result in corrupted output.
 
 ### Assembly Files
 stuff
