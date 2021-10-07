@@ -43,6 +43,8 @@ $ casm -vv -w z80.instr kernel.asm -o mykernel
 
 ### 💾 How To Install CASM
 
+NOTE: CASM HAS NOT YET BEEN RELEASED. If you want to try it anyway you can always clone this repository and build it yourself.
+
 #### 🐧 Linux
 
 <b>Step 1:</b>
@@ -60,3 +62,10 @@ Go to the directory where you downloaded the `.deb` file and run the following c
 ```sh
 $ sudo apt install ./<downloaded file>.deb
 ```
+This should install CASM on your device. To confirm the installation run `casm --version`.
+
+<br>
+
+#### 🪟 Windows
+
+Sadly, CASM on Windows is not yet supported. Maybe later!
