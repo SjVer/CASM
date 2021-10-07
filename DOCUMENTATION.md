@@ -1,9 +1,9 @@
 # CASM Documentation
 
 Contents:</b>
-1. [What is CASM?](###What-Is-CASM?)
-2. [Instruction Files](###Instruction-Files)
-3. [Assembly Files](###Assembly-Files)
+1. [What is CASM?](#what-is-casm)
+2. [Instruction Files](#instuction-files)
+3. [Assembly Files](#assembly-files)
 
 ### What Is CASM?
 stuff
