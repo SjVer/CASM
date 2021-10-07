@@ -23,6 +23,8 @@ Options are set using the the following syntax: `#<name> <value(s)>`. During the
 These are the available options and their default values:
 <br>
 Binary output mode:
+<br>
+
 | Name | Type/Value | Default | Description |
 | --- | --- | --- | --- |
 | bits | integer | 8 | the amount of bits per outputted value/instruction |
