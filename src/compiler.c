@@ -17,8 +17,8 @@ void initOptions(Options *options)
 	options->extension = cpystr("", 0);
 	options->padLeading = false;
 	
-	options->format = NULL;
-	options->formatLen = 0;
+	options->format = "{#x} ";
+	options->formatLen = 5;
 	options->prefix = NULL;
 	options->prefixLen = 0;
 	options->suffix = NULL;
