@@ -27,5 +27,11 @@ Options:
       --usage                Give a short usage message
   -V, --version              Print program version
 </pre>
+Examples:
+<pre>
+$ casm z80.instr kernel.asm
+$ casm -v z80.instr kernel.asm -o mykernel
+$ casm -vv -w z80.instr kernel.asm -o mykernel
+</pre>
 
 ### 💾 How To Install CASM
