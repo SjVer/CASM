@@ -96,7 +96,6 @@ ldi {value:12} = 0x4`4 + value   ; loads the given 12-bit value
 jmp {address:8} = 0x5`8 + address
 ```
 
-```
 
 ### Assembly Files
 Where the instruction file defines how the assembler will compile input, the assembly file is the actual input. 
