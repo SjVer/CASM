@@ -1,3 +1,6 @@
+[cli-version]: 0.0.1
+[file-version]: 0.1
+
 # CASM
 A fully customisable assembler for your own instruction sets!
 <br>
@@ -54,8 +57,8 @@ Download the debian package:
 
 | | |
 | --- | --- |
-| x86_64 | [casm_0.1_x86-64.deb](https://github.com/SjVer/CASM/releases/download/0.1/casm_0.1_x86-64.deb) |
-| armv7l | [casm_0.1_armv7l.deb](https://github.com/SjVer/CASM/releases/download/0.1/casm_0.1_armv7l.deb) |
+| x86_64 | [casm_[file-version]_x86-64.deb](https://github.com/SjVer/CASM/releases/download/0.1/casm_[file-version]_x86-64.deb) |
+| armv7l | [casm_[file-version]_armv7l.deb](https://github.com/SjVer/CASM/releases/download/0.1/casm_[file-version]_armv7l.deb) |
 
 <br>
 <b>Step 2:</b>
@@ -77,19 +80,21 @@ Sadly, CASM on Windows is not yet supported. Maybe later!
 ### 🔨 Building CASM
 If you want to build CASM yourself, here's how to do it (on linux):
 
-1.
 ```sh
 $ git clone https://github.com/SjVer/CASM.git
-```
+Cloning into 'CASM'...
+...
 
-2.
-```sh
 $ cd ./CASM
-```
-
-3.
-```sh
 $ make
+[01/5] compiling compiler.c into compiler.o. done!
+[02/5] compiling chunk.c into chunk.o. done!
+[03/5] compiling cwalk.c into cwalk.o. done!
+[04/5] compiling tools.c into tools.o. done!
+[05/5] compiling main.c into main.o. done!
+[final] compiling final product casm. done!
+$ bin/casm --version
+casm [cli-version]
 ```
 
 The CASM executable should be in the `bin` directory. 
