@@ -50,8 +50,19 @@ It is important to keep in mind that when setting an option anywhere in the file
 
 #### Formats
 The option `format` can be used (when in text mode) to specify how the assembler will format the compiled instructions/values. In order to give the user as much freedom as possible the format option comes with a lot of features. </b>
-The assembler replaces format specifiers (enclosed in curly braces) in the format using the specified format. (That's a lot of "format"'s...). A typical example of such a format is this: `"{#x} "`. This format contains only one specifier: `#x`. This specifier tells the assembler to output the value as a lowercase hexadecimal with prefix (turning e.g. 15 into "0x0f", assuming the bits option is set to 8). 
+The assembler replaces format specifiers (enclosed in curly braces) in the format using the specified format. (That's a lot of "format"'s...). A typical example of such a format is this: `"{#x} "`. This format contains only one specifier: `#x`. This specifier tells the assembler to output the value as a lowercase hexadecimal with prefix (turning e.g. 15 into "0x0f ", assuming the bits option is set to 8). </b>
+There are a number of these specifiers:
 
+| Specifier | Output |
+| --- | --- |
+| b | binary |
+| #b | binary with prefix "0b" |
+| d | decimal |
+| #d | decimal with prefix "0d" |
+| x | lowercase hexadecimal |
+| #x | lowercase hexadecimal with prefix "0x" |
+| X | uppercase hexadecimal |
+| #X | uppercase hexadecimal with prefix "0X" |
 
 ### Assembly Files
 stuff
