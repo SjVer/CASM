@@ -24,6 +24,7 @@ These are the available options and their default values:
 </b>
 </b>
 Binary output mode:
+</b>
 | Name | Allowed | Type/Value | Default | Description |
 | --- | --- | --- | --- | --- |
 | bits | yes | integer | 8 | the amount of bits per outputted value/instruction |
