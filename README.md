@@ -108,4 +108,4 @@ $ bin/casm --version
 casm 0.0.1
 ```
 
-The CASM executable should be in the `bin` directory. 
+The CASM executable should be in the `bin` directory and its version should be [cli-version]. 
