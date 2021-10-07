@@ -1,7 +1,6 @@
 # CASM
 A fully customisable assembler for your own instruction sets!
 <br>
-Contents:
 1. [What Is CASM?](#-what-is-casm?) 🇨
 2. [Documentation](#-documentation) 📚
 3. [Command-Line Usage](#-command-line-usage) 💻
