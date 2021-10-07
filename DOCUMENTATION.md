@@ -75,10 +75,15 @@ The next part -the constants and arguments- requires the constants and/or argume
 <br>
 Here, the assembled instruction/value will consist of the constant 3 in 8 bits followed by whatever argument is given as address in the amount of bits specified earlier. (In the case of `{address:8}` that's 8 bits.)
 </b>
-It is worth noting that if a constant is defined without size (a backtick followed by an integer) the assembler will automatically pick the lowest amount of bits possible. This might not be convinient so it is reccomended to always specify the width of a constant.
+It is worth noting that if a constant is defined without size (a backtick followed by an integer) the assembler will automatically pick the lowest amount of bits possible. This might not be convinient so it is reccommended to always specify the width of a constant.
 <br>
 Combining all this knowledge a simple "load address" instruction could be defined as ``lda {address:8} = 0x3`8 + address``.
-If you were to set the type option to binary, the bits option to 16 and assemble `lda 5`, the output would be `0x0305`.
+If you were to set the type option to binary, the bits option to 16 and assemble `    lda 5`, the output would be `0x0305`.
+
+#### Macros
+W.I.P.
 
 ### Assembly Files
-stuff
+Where the instruction file defines how the assembler will compile input, the assembly file is the actual input. The syntax of CASM assembly is rather simple:
+</b>
+instructions are indented by a single tab, and any arguments are given seperated by commas. Labels are declared undindented, consisting of a single word and ending in a colon. These labels can be used as arguments throughout the entire assembly file and will be replaced by the address of the first instruction after the declaration.
