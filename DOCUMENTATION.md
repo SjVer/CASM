@@ -50,7 +50,7 @@ It is important to keep in mind that when setting an option anywhere in the file
 
 #### Formats
 The option `format` can be used (when in text mode) to specify how the assembler will format the compiled instructions/values. In order to give the user as much freedom as possible the format option comes with a lot of features. </b>
-The assembler replaces format specifiers (enclosed in curly braces) in the format using the specified format. (That's a lot of "format"'s...). A typical example of such a format is this: `"{#x} "`. This format contains only one specifier: `#x`. This specifier tells the assembler to output the value as a lowercase hexadecimal with prefix (turning e.g. 15 into "0x0f ", assuming the bits option is set to 8). </b>
+The assembler replaces format specifiers (enclosed in curly braces) in the format using the specified format. (That's a lot of "format"'s...). A typical example of such a format is this: `"{#x}. "`. This format contains only one specifier: `#x`. This specifier tells the assembler to output the value as a lowercase hexadecimal with prefix (turning e.g. 15 into "0x0f. ", assuming the bits option is set to 8). </b>
 There are a number of these specifiers:
 
 | Specifier | Output |
@@ -63,6 +63,13 @@ There are a number of these specifiers:
 | #x | lowercase hexadecimal with prefix "0x" |
 | X | uppercase hexadecimal |
 | #X | uppercase hexadecimal with prefix "0X" |
+
+A format can contain an arbitrary amount of these specifiers.
+
+#### Instructions
+The most important part of any instruction file are its instructions. These are declared using the following syntax: `<name> <arguments> = <constants and arguments>`. The name can be any sequence of characters except spaces, tabs and newlines.
+</b>
+The arguments have a syntax of their own: `{<name>:<bits>}` where `<bits>` is the width in bits of said argument. If -for example- an argument named "address" would be a byte the syntax would be `{address:8}`.
 
 ### Assembly Files
 stuff

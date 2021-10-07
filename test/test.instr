@@ -6,7 +6,7 @@
 #suffix "\b"
 #pad trailing
 
-lda {address:8} = 0x1`4 + address + 0x1`4
+lda {address} = 0x1`4 + address + 0x1`4
 
 sta {address:8} = 0x02`8 + address
 
