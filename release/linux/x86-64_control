@@ -1,0 +1,10 @@
+Package: casm
+Version: 0.0.1
+Maintainer: Sjoerd Vermeulen <sjoerd@marsenaar.com>
+Section: utils
+Source: https://github.com/SjVer/CASM
+Homepage: https://github.com/SjVer/CASM
+Architecture: amd64
+Priority: optional
+Description: CASM Customisable Assembler
+ For more information see https://github.com/SjVer/CASM

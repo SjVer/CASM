@@ -1,5 +1,5 @@
-[x86-64-link]: https://github.com/SjVer/CASM/releases/download/0.1/casm_0.1_x86-64.deb
-[armv7l-link]: https://github.com/SjVer/CASM/releases/download/0.1/casm_0.1_armv7l.deb
+[x86-64-link]: https://github.com/SjVer/CASM/releases/download/0.0.1/casm_0.0.1_x86-64.deb
+[armv7l-link]: https://github.com/SjVer/CASM/releases/download/0.0.1/casm_0.0.1_armv7l.deb
 
 # CASM
 A fully customisable assembler for your own instruction sets!
