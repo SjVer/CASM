@@ -88,4 +88,13 @@ Where the instruction file defines how the assembler will compile input, the ass
 <br>
 The syntax of CASM assembly is rather simple:
 <br>
-instructions are indented by a single tab, and any arguments are given seperated by commas. Labels are declared undindented, consisting of a single word and ending in a colon. These labels can be used as arguments throughout the entire assembly file and will be replaced by the address of the first instruction after the declaration.
+Instructions are indented by a single tab, and any arguments are given seperated by commas. Labels are declared undindented, consisting of a single word and ending in a colon. These labels can be used as arguments throughout the entire assembly file and will be replaced by the address of the first instruction after the declaration. Everything after a semicolon is a comment.
+<br>
+Here is an example:
+```asm
+	ldi 1 ; this is a comment
+
+loop:
+	prnt
+	jmp loop
+```
