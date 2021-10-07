@@ -79,6 +79,18 @@ It is worth noting that if a constant is defined without size (a backtick follow
 <br>
 Combining all this knowledge a simple "load address" instruction could be defined as ``lda {address:8} = 0x3`8 + address``.
 If you were to set the type option to binary, the bits option to 16 and assemble `    lda 5`, the output would be `0x0305`.
+<br>
+Here is an example instruction file:
+```asm
+#type bin
+#bits 16
+#ext ".bin"
+#pad trailing
+
+lda {address:8} = 0x3`8 + address 
+ldi {value:12} = 0x4`4 + value   ; loads the given 12-bit value
+jmp {address:8} = 0x5`8 + address
+```
 
 #### Macros
 W.I.P.
