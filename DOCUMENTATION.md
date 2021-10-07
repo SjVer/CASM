@@ -26,7 +26,7 @@ Binary output mode:
 | Name | Allowed | Type/Value | Default | Description |
 | --- | --- | --- | --- | --- |
 | bits | yes | integer | 8 | the amount of bits per outputted value/instruction |
-| ext | yes | string | "" | the extension of the outputted file (if no name is specified) |
+| ext | yes | string | "" | the extension of the outputted file (if no name is specified with the -o cli argument) |
 | format | no | | |
 | type | yes | "text"/"bin" | "bin" | the type of output (binary or text) |
 | pad | yes | "leading"/"trailing" | "trailing" | wether the values that do not take up the specified amount of bits will be padded with zeros at the front or at the back |
