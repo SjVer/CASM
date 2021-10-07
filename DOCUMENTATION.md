@@ -22,10 +22,16 @@ Options are set using the the following syntax: `#<name> <value(s)>`. During the
 </b>
 These are the available options and their default values:
 </b>
-| Name | Binary/Text mode | Default (Binary) | Default (text) | Description |
+Binary output mode:
+| Name | Allowed | Type/Value | Default | Description |
 | --- | --- | --- | --- | --- |
-| bits | both | 8 | 8 | the amount of bits per outputted value/instruction |
-| ext | both | "" | "" | the extension of the outputted file (if none specified) |
+| bits | yes | integer | 8 | the amount of bits per outputted value/instruction |
+| ext | yes | string | "" | the extension of the outputted file (if no name is specified) |
+| format | no | | |
+| type | yes | "text"/"bin" | "bin" | the type of output (binary or text) |
+| pad | yes | "leading"/"trailing" | "trailing" | wether the values that do not take up the specified amount of bits will be padded with zeros at the front or at the back |
+| prefix | yes | integers | | the values that will come before the assembled code |
+| suffix | yes | integers | | the values that will come after the assembled code |
 
 ### Assembly Files
 stuff
