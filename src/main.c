@@ -20,7 +20,7 @@ struct arguments
 
 static struct argp_option options[] = {
 		// longname, shortname, arg, idk, help
-		{"verbose", 'v', 0, 0, "Produce verbose output (-vv, -vvv, etc. to increase verbosity)"},
+		{"verbose", 'v', 0, 0, "Produce verbose output (-vv for extra verbosity)"},
 		{"output", 'o', "OUTFILE", 0, "Output to OUTFILE instead of to standard output"},
 		{0}
 };
