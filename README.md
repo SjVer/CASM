@@ -84,8 +84,12 @@ If you want to build CASM yourself, here's how to do it (on linux):
 ```sh
 $ git clone https://github.com/SjVer/CASM.git
 Cloning into 'CASM'...
-...
-
+remote: Enumerating objects: 407, done.
+remote: Counting objects: 100% (407/407), done.
+remote: Compressing objects: 100% (274/274), done.
+remote: Total 407 (delta 233), reused 292 (delta 121), pack-reused 0
+Receiving objects: 100% (407/407), 113.03 KiB | 1.85 MiB/s, done.
+Resolving deltas: 100% (233/233), done.
 $ cd ./CASM
 $ make
 [01/5] compiling compiler.c into compiler.o. done!
@@ -95,7 +99,7 @@ $ make
 [05/5] compiling main.c into main.o. done!
 [final] compiling final product casm. done!
 $ bin/casm --version
-casm 0.0.1
+casm [cli-version]
 ```
 
 The CASM executable should be in the `bin` directory. 
