@@ -7,6 +7,6 @@ CASM, or Customisable Assembler is an assembler that uses user-defined instructi
 ### 📚 Documentation
 Check out the documentation [here](DOCUMENTATION.md)!
 
-### 🖥️ Command-Line Usage
+### 💻 Command-Line Usage
 
-### ⌨️ How To Install CASM
+### 💾 How To Install CASM
