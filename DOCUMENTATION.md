@@ -21,8 +21,7 @@ In order for the assembler to generate proper output it needs an instruction fil
 Options are set using the the following syntax: `#<name> <value(s)>`. During the assembling stage these options (or their default values if not specified) are used to generate the output.
 </b>
 These are the available options and their default values:
-</b>
-</b>
+<br>
 Binary output mode:
 </b>
 | Name | Allowed | Type/Value | Default | Description |
