@@ -1,4 +1,3 @@
-[cli-version]: 0.0.1
 [x86-64-link]: https://github.com/SjVer/CASM/releases/download/0.1/casm_0.1_x86-64.deb
 [armv7l-link]: https://github.com/SjVer/CASM/releases/download/0.1/casm_0.1_armv7l.deb
 
@@ -108,4 +107,4 @@ $ bin/casm --version
 casm 0.0.1
 ```
 
-The CASM executable should be in the `bin` directory and its version should be [cli-version]. 
+The CASM executable should be in the `bin` directory.
