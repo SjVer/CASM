@@ -110,6 +110,6 @@ Here is an example:
 	ldi 1 ; this is a comment
 
 loop:
-	prnt
+	lda 0x12
 	jmp loop
 ```
