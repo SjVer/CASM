@@ -5,6 +5,7 @@ A fully customisable assembler for your own instruction sets!
 2. [Documentation](#-documentation) 📚
 3. [Command-Line Usage](#-command-line-usage) 💻
 4. [How To Install CASM](#-how-to-install-casm) 💾
+5. [Building CASM](#-building-casm) 🔨
 
 <br>
 
@@ -70,3 +71,25 @@ This should install CASM on your device. To confirm the installation run `casm -
 #### 🪟 Windows
 
 Sadly, CASM on Windows is not yet supported. Maybe later!
+
+<br>
+
+### 🔨 Building CASM
+If you want to build CASM yourself, here's how to do it (on linux):
+
+1.
+```sh
+$ git clone https://github.com/SjVer/CASM.git
+```
+
+2.
+```sh
+$ cd ./CASM
+```
+
+3.
+```sh
+$ make
+```
+
+The CASM executable should be in the `bin` directory. 
