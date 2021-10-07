@@ -69,7 +69,11 @@ A format can contain an arbitrary amount of these specifiers.
 #### Instructions
 The most important part of any instruction file are its instructions. These are declared using the following syntax: `<name> <arguments> = <constants and arguments>`. The name can be any sequence of characters except spaces, tabs and newlines.
 <br>
-The arguments have a syntax of their own: `{<name>:<bits>}` where `<bits>` is the width in bits of said argument. If -for example- an argument named "address" would be a byte the syntax would be `{address:8}`.
+The arguments have a syntax of their own: `{<name>:<bits>}` where `<bits>` is the width in bits of said argument. If -for example- an argument named "address" would be a byte long, the syntax would be `{address:8}`.
+<br/>
+The next part -the constants and arguments- requires the constants and/or arguments to be seperated by a `+`. Constants will be part of the assembled instruction/value just the way they are while arguments are replaced by the value given by the user in the assembly file. An example of this is the following: ``0x3`8 + address``.
+<br>
+Here, the assembled instruction/value will consist of the constant 3 in 8 bits followed by whatever argument is given as address in the amount of bits specified earlier. (In the case of `{address:8}` that's 8 bits.)
 
 ### Assembly Files
 stuff
