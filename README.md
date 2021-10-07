@@ -50,5 +50,5 @@ Download the debian package:
 Go to the directory where you downloaded the `.deb` file and run the following command:
 
 ```sh
-$ sudo apt install ./<downloaded file>.deb
+user@host$ sudo apt-get install ./\<downloaded file\>.deb
 ```
