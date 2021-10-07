@@ -22,6 +22,7 @@ Options are set using the the following syntax: `#<name> <value(s)>`. During the
 </b>
 These are the available options and their default values:
 </b>
+</b>
 Binary output mode:
 | Name | Allowed | Type/Value | Default | Description |
 | --- | --- | --- | --- | --- |
