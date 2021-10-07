@@ -84,6 +84,8 @@ If you were to set the type option to binary, the bits option to 16 and assemble
 W.I.P.
 
 ### Assembly Files
-Where the instruction file defines how the assembler will compile input, the assembly file is the actual input. The syntax of CASM assembly is rather simple:
+Where the instruction file defines how the assembler will compile input, the assembly file is the actual input. 
+</b>
+The syntax of CASM assembly is rather simple:
 </b>
 instructions are indented by a single tab, and any arguments are given seperated by commas. Labels are declared undindented, consisting of a single word and ending in a colon. These labels can be used as arguments throughout the entire assembly file and will be replaced by the address of the first instruction after the declaration.
