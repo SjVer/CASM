@@ -34,3 +34,18 @@ $ casm -vv -w z80.instr kernel.asm -o mykernel
 </pre>
 
 ### 💾 How To Install CASM
+
+#### 🐧 Linux
+
+<b>Step 1:</b>
+Download the debian package:
+
+| x86_64 | [casm_0.1_x86-64.deb](https://github.com/SjVer/CASM/releases/download/0.1/casm_0.1_x86-64.deb)
+| armv7l | [casm_0.1_armv7l.deb](https://github.com/SjVer/CASM/releases/download/0.1/casm_0.1_armv7l.deb)
+
+<br>
+<b>Step 2:</b>
+Go to the directory where you downloaded the `.deb` file and run the following command:
+```bash
+$ sudo apt install ./<filename>.deb
+```
