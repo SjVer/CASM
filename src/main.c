@@ -140,9 +140,6 @@ int main(int argc, char **argv)
 
 	// ========= setting stuff up =========
     
-    char *instr_src = readFile(arguments.args[0]);
-    char *asm_src = readFile(arguments.args[1]);
-	
 	Chunk chunk;
 	initChunk(&chunk);
 
@@ -152,7 +149,7 @@ int main(int argc, char **argv)
 	// ========= compiling stuff =========
 
     AssembleStatus status = assemble(&options, arguments.verbose, &chunk,
-        arguments.args[0], arguments.args[1], instr_src, asm_src);
+        arguments.args[0], arguments.args[1]);
 
     if (status != ASSEMBLE_SUCCESS) return status;
 
@@ -165,13 +162,13 @@ int main(int argc, char **argv)
 		char *dot, *newname;
 		int len;
 
-		dot = strrchr(arguments.args[0], '.');
-		if (dot) len = dot - arguments.args[0];
-		else len = strlen(arguments.args[0]);
+		dot = strrchr(arguments.args[1], '.');
+		if (dot) len = dot - arguments.args[1];
+		else len = strlen(arguments.args[1]);
 		
 		newname = malloc(len + 6);
 		
-		strncpy(newname, arguments.args[0], len);
+		strncpy(newname, arguments.args[1], len);
 		strcpy(newname + len, options.extension);
 
 		arguments.outfile = newname;
@@ -202,8 +199,10 @@ int main(int argc, char **argv)
 
 			// first write prefix
 			PRINTMSG(2, "~ Prefix:\n");
-			PRINTHEXES(options.prefix, options.prefixLen, &newchunk);
-			if (options.prefixLen == 0) PRINTMSG(2, " (No prefix)");
+			if (options.prefixLen > 0)
+				{ PRINTHEXES(options.prefix, options.prefixLen, &newchunk); }
+			else
+				PRINTMSG(2, " (No prefix)");
 			printf("\n");
 
 			// then write code
@@ -212,8 +211,10 @@ int main(int argc, char **argv)
 
 			// then write suffix
 			PRINTMSG(2, "~ Suffix:\n");
-			PRINTHEXES(options.suffix, options.suffixLen, &newchunk);
-			if (options.suffixLen == 0) PRINTMSG(2, " (No suffix)");
+			if (options.suffixLen > 0)
+				{ PRINTHEXES(options.suffix, options.suffixLen, &newchunk); }
+			else
+				PRINTMSG(2, " (No suffix)");
 			printf("\n");
 
 			uint8_t *buffer = NULL;

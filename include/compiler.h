@@ -61,6 +61,5 @@ typedef struct
 // Instruction newInstruction(Array Args_array, const char *name);
 void initOptions(Options *options);
 AssembleStatus assemble(Options *options, int verbose, Chunk *chunk,
-	const char *instr_path, const char *asm_path,
-	const char *instr_src, const char *asm_src);
+	const char *instr_path, const char *asm_path);
 #endif

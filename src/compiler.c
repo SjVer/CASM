@@ -10,6 +10,8 @@ static Instruction newInstruction(Array Args_array, int argc, const char *name)
 	return instr;
 }
 
+
+
 void initOptions(Options *options)
 {
 	options->bitwidth = DEFAULT_BITWIDTH;
@@ -208,15 +210,23 @@ static int consumeIntMaybe(const char *part)
 
 // =============================
 
-static AssembleStatus compileInstrFile(Options *options, const char *src)
+static AssembleStatus compileInstrFile(Options *options, Array lines)
 {
-	// split into lines
-	Array lines = spltstr(src, "\n");
-
 	for(lineNo = 1; lineNo < lines.used + 1; lineNo++)
 	{
-		curLine = idxArray(&spltstr(idxArray(&lines, lineNo - 1, char*), ";"), 0, char*);
-		
+		// curLine = idxArray(&spltstr(idxArray(&lines, lineNo - 1, char*), ";"), 0, char*);
+
+		// if (curLine == NULL || strlen(curLine) == 0) continue;
+
+		char *_buf = idxArray(&lines, lineNo - 1, char*);
+		for (int i = 0; i < strlen(_buf); i++) if (_buf[i] == ';') { _buf[i] = '\0'; break; }
+		curLine = (char*)malloc(strlen(_buf));
+		strcpy(curLine, _buf);
+		if (curLine == NULL || strlen(curLine) == 0) continue;
+		curLine = strpstr(curLine, " ");
+		if (curLine == NULL || strlen(curLine) == 0) continue;
+
+
 		// option
 		if (strstart(curLine, "#"))
 		{
@@ -381,11 +391,21 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 				return ASSEMBLE_INVALID_MACRO;
 			}
 		}		
-	
+
 		// instruction or macro
 		else
 		{
-			Array words = spltstr(curLine, " ");
+			Array words = newArray(0, 1, true);
+			// split line by spaces and tabs
+			{
+				Array _words = spltstr(curLine, " ");
+				for (int i = 0; i < _words.used; i++)
+				{
+					Array __words = spltstr(idxArray(&_words, i, char*), "\t");
+					for (int j = 0; j < __words.used; j++)
+						_appendArray(&words, (void*)idxArray(&__words, j, char*));
+				}
+			}
 			Array args = newArray(0, 1, true);
 
 			/*
@@ -421,9 +441,6 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 				if (arg.bitwidth == INVALID_CONSUME) return ASSEMBLE_INVALID_DECL;
 				arg.name = cpystr(idxArray(&parts, 0 , char*), strlen(idxArray(&parts, 0 , char*)));
 
-				// _appendArray(&args, strcpy(malloc(strlen(curWord) + 1), curWord));
-				// _appendArray(&argsW, memcpy(malloc(sizeof bitwidth), &bitwidth, sizeof bitwidth));
-				// _appendArray(&args, memcpy(malloc(sizeof arg), &arg, sizeof arg));
 				appendArrayCpy(&args, arg);
 
 				if (strend(curWord, ":"))
@@ -470,6 +487,7 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 
 				// skip tabs
 				char *equals = CURWORD;
+
 				while (true)
 				{
 					equals = strpstr(equals, "\t");
@@ -593,7 +611,7 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 				appendArrayCpy(&instructions, instr);
 
 				/*
-				printf("\n=== %s ===\n", instr.name);
+				printf("\n=== %s ===", instr.name);
 				for (int i = 0; i < instr.args.used; i++)
 				{
 					printf("\n");
@@ -602,7 +620,8 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 					else printf("opcode: %d\n", arg.opcode);
 					printf("bitwidth: %d\n", arg.bitwidth);
 				}
-				*/
+				printf("=== === ===\n\n");
+				*/ 
 
 				#undef PRINTARG
 				#undef CURWORD
@@ -614,18 +633,24 @@ static AssembleStatus compileInstrFile(Options *options, const char *src)
 	return ASSEMBLE_SUCCESS;
 }
 
-static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *chunk)
+static AssembleStatus assembleAsmFile(Options *options, Array lines, Chunk *chunk)
 {
-	// split into lines
-	Array lines = spltstr(src, "\n");
 	definedLabels = newArray(0, 1, true);
 	tmpLabels = newArray(0, 1, true);
 
-
 	for (lineNo = 1; lineNo < lines.used + 1; lineNo++)
 	{
-		curLine = idxArray(&spltstr(idxArray(&lines, lineNo - 1, char*), ";"), 0, char*);
+		// split at first ';' to ignore comments
+		// curLine = idxArray(&spltstr(idxArray(&lines, lineNo - 1, char*), ";"), 0, char*);
+		char *_buf = idxArray(&lines, lineNo - 1, char*);
+		for (int i = 0; i < strlen(_buf); i++) if (_buf[i] == ';') { _buf[i] = '\0'; break; }
+		curLine = (char*)malloc(strlen(_buf));
+		strcpy(curLine, _buf);
+		if (curLine == NULL || strlen(curLine) == 0) continue;
 		curLine = strpstr(curLine, " ");
+		if (curLine == NULL || strlen(curLine) == 0) continue;
+
+
 		Array words = spltstr(curLine, " ");
 
 		#define WORD(i) (strpstr(strpstr(idxArray(&words, i, char*), " "), "\t"))
@@ -633,6 +658,9 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 		if (strstart(curLine, "\t")) // indented thus instruction
 		{
 			curLine = strpstr(curLine, "\t");
+
+			if (curLine == NULL || strlen(curLine) == 0) continue;
+
 			char *curWord = WORD(0);
 			
 			Instruction instr;
@@ -651,8 +679,8 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 
 			if (!found)
 			{
-				// errorAt(curWord, lineNo, "undefined instruction.");
-				// return ASSEMBLE_INVALID_INSTR;
+				errorAt(curWord, lineNo, "undefined instruction.");
+				return ASSEMBLE_INVALID_INSTR;
 			}
 			else
 			{
@@ -785,13 +813,22 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 					return ASSEMBLE_INVALID_LABEL;
 				}
 
-				Label label;
-				label.address = chunk->count + 1;
-				label.name = cpystr(curWord, strlen(curWord) - 1);
+				// Label label;
+				// label.address = chunk->count + 1;
+				// label.name = "kik";
 
-				appendArrayCpy(&definedLabels, label);
+				// appendArrayCpy(&definedLabels, label);
 				
-				msgAt(lineNo, fstr("Label '%s' defined at address 0x%x.", label.name, label.address));
+				// msgAt(lineNo, fstr("Label '%s' defined at address 0x%x.", label.name, label.address));
+
+				Label *label = malloc(sizeof(Label));
+				label->address = chunk->count + 1;
+
+				label->name = strdup(cpystr(curWord, strlen(curWord) - 1));
+
+				_appendArray(&definedLabels, (void*)label);
+
+				msgAt(lineNo, fstr("Label '%s' defined at address 0x%x.", label->name, label->address));
 			}
 			else
 			{
@@ -809,9 +846,9 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 		int newval = -1;
 
 		// search for label
-		for (int j = 0;j < definedLabels.used; j++)
+		for (int j = 0; j < definedLabels.used; j++)
 		{
-			Label lab = idxArray(definedLabels, i, Label);
+			Label lab = idxArray(definedLabels, j, Label);
 			if(strcmp(lab.name, label.name) == 0)
 			{ newval = lab.address; break; }
 		}
@@ -839,9 +876,9 @@ static AssembleStatus assembleAsmFile(Options *options, const char *src, Chunk *
 	return ASSEMBLE_SUCCESS;
 }
 
-AssembleStatus assemble(Options *options, int _verbose, Chunk *chunk,
-	const char *instr_path, const char *asm_path,
-	const char *instr_src, const char *asm_src)
+AssembleStatus assemble(
+	Options *options, int _verbose, Chunk *chunk,
+	const char *instr_path, const char *asm_path)
 {
 	verbose = _verbose;
 	instructions = newArray(0, 1, true);
@@ -849,7 +886,8 @@ AssembleStatus assemble(Options *options, int _verbose, Chunk *chunk,
 	if (verbose > 1) printf("~ Parsing %s...\n", instr_path);
 
 	curFile = cpystr(instr_path, strlen(instr_path));
-	AssembleStatus instrStatus = compileInstrFile(options, instr_src);
+	Array instr_lines = readFileLines(instr_path);
+	AssembleStatus instrStatus = compileInstrFile(options, instr_lines);
 
 	if (instrStatus != ASSEMBLE_SUCCESS) return instrStatus;
 
@@ -870,23 +908,29 @@ AssembleStatus assemble(Options *options, int _verbose, Chunk *chunk,
 		}
 	}
 
+
+
 	if (verbose > 1) printf("~ Assembling %s...\n", asm_path);
 
 	curFile = cpystr(asm_path, strlen(asm_path));
-	AssembleStatus asmStatus = assembleAsmFile(options, asm_src, chunk);
+	Array asm_lines = readFileLines(asm_path);
+	AssembleStatus asmStatus = assembleAsmFile(options, asm_lines, chunk);
 
-	//// printf("\ndefined labels:\n");
-	//// for (int i = 0; i < definedLabels.used; i++)
-	//// {
-	//// 	Label lab = idxArray(definedLabels, i, Label);
-	//// 	printf(" at %d: %s\n", lab.address, lab.name);
-	//// }
-	//// printf("\n");
+	if (asmStatus != ASSEMBLE_SUCCESS) return asmStatus;
 
 	if (verbose > 1) // print chunk
 	{
-		printf("~ Assembling %s done.\n~ Assembled output:\n", asm_path);
+		printf("~ Assembling %s done.\n", asm_path);
 	
+		printf("~ Defined labels:\n");
+		for (int i = 0; i < definedLabels.used; i++)
+		{
+			Label lab = idxArray(definedLabels, i, Label);
+			printf(" at 0x%x: '%s'\n", lab.address, lab.name);
+		}
+
+		printf("~ Assembled output:\n");
+		
 		int printed = 0;
 		for (int i = 0; i < chunk->count; i++)
 		{

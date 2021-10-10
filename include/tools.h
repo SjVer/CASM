@@ -78,6 +78,7 @@ char *toUpper(const char *str);
 
 int bitlen(uint32_t value);
 char *readFile(const char *path);
+Array readFileLines(const char *path);
 int panToUint8Arr(int *values, int count, int bitwidth, uint8_t **buffer);
 
 #endif

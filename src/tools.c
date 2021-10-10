@@ -76,6 +76,8 @@ Array spltstr(const char *str, const char *delim)
 {
     Array lines = newArray(0, 1, true);
 
+    if (str == NULL || strlen(str) == 0) return lines;
+
 	char *line = strtok(cpystr(str, strlen(str)), delim);
 	while (line != NULL)
 	{
@@ -195,7 +197,7 @@ bool isnum(const char *str, bool float_allowed)
 bool strstart(const char *str, const char *start)
 {
     // str cannot be shorter than start
-    if (strlen(str) < strlen(start)) return false;
+    if (str == NULL || strlen(str) == 0 || strlen(str) < strlen(start)) return false;
 
     return strncmp(str, start, strlen(start)) == 0;
 }
@@ -204,7 +206,7 @@ bool strstart(const char *str, const char *start)
 bool strend(const char *str, const char *end)
 {
     // str cannot be shorter than start
-    if (strlen(str) < strlen(end)) return false;
+    if (str == NULL || strlen(str) == 0 || strlen(str) < strlen(end)) return false;
 
     // printf("checking '%s' == '%s' : %s\n",
     //     str + strlen(str) - strlen(end), end, 
@@ -245,7 +247,7 @@ int bitlen(uint32_t value)
     return bits + value;
 }
 
-// read constents of file to string
+// read contents of file to string
 char *readFile(const char *path)
 {
     FILE *file = fopen(path, "rb");
@@ -275,6 +277,34 @@ char *readFile(const char *path)
 
 	fclose(file);
 	return buffer;
+}
+
+// read contents of file to Array of lines
+Array readFileLines(const char *path)
+{
+    Array lines = newArray(0, 1, true);
+    
+    FILE *file = fopen(path, "r");
+    if (file == NULL)
+    {
+        lines.used = -1;
+        return lines;
+    }
+
+    char *line;
+    size_t len = 0;
+
+    while (getline(&line, &len, file) != -1) {
+
+        // char* holder = (char*)malloc(strlen(line)*sizeof(char));
+        // strcpy(holder, line);
+        char *holder = strpstrb(line, "\n");
+        // append
+        _appendArray(&lines, (void*)holder);
+    }
+    fclose(file);
+    free(line);
+    return lines;
 }
 
 // pan the given array of ints to uint8_t's
